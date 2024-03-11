@@ -6,6 +6,8 @@ import 'package:dart_ari_proxy/ari_client/BridgesApi.dart';
 import 'package:dart_ari_proxy/ari_client/events/stasis_start.dart';
 import 'package:dart_ari_proxy/recorder/rtp_server.dart';
 
+import 'package:dotenv/dotenv.dart';
+
 //import 'package:dart_ari_proxy/ari_client/Events/event.dart';
 //import 'package:dart_ari_proxy/ari_http_proxy.dart';
 //import 'package:dart_ari_proxy/dart_ari_proxy.dart';
@@ -333,6 +335,10 @@ void safeHangup(Channel channel) {
 }
 
 void main(List<String> arguments) async {
+  var env = DotEnv(includePlatformEnvironment: true)..load();
+  rtpIp = env['RTP_ADDRESS']!;
+  port = int.parse(env['RTP_PORT']!);
+  print("Listening on: $rtpIp:$port");
   // wsSipServer proxy=wsSipServer("127.0.0.1",8082);
   // proxy.intialize();
 
