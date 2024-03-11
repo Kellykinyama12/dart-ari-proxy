@@ -3,10 +3,10 @@ import 'dart:io';
 
 import 'package:dart_ari_proxy/ari_client/BridgesApi.dart';
 import 'package:dart_ari_proxy/ari_client/ChannelsApi.dart';
-import 'package:dart_ari_proxy/ari_client/Events/event.dart';
+//import 'package:dart_ari_proxy/ari_client/events/event.dart';
 import 'package:dart_ari_proxy/ari_client/events/stasis_start.dart';
 
-import 'ari_client/ChannelsApi.dart';
+//import 'ari_client/ChannelsApi.dart';
 import 'ari_client/events/channel_destroyed.dart';
 import 'ari_client/events/stasis_end.dart';
 
