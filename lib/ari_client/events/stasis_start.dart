@@ -1,4 +1,4 @@
-import 'package:dart_ari_proxy/ari_client/Events/event.dart';
+import 'package:dart_ari_proxy/ari_client/events/event.dart';
 
 import '../ChannelsApi.dart';
 
