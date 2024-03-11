@@ -140,6 +140,7 @@ void originate(Channel channel, Bridge holdingBridge) async {
     format: 'alaw',
   );
   rtpPortCounter++;
+  if (rtpPortCounter - port > 2000) rtpPortCounter = 0;
   //print("Externa channel: ${externalChannel}");
   Bridge mixingBridge = await client.bridge(type: ['mixing']);
 
