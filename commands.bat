@@ -1,0 +1,1 @@
+dart compile exe bin/dart_ari_proxy.dart
