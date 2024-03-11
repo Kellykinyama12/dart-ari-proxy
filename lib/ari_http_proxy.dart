@@ -9,49 +9,34 @@ import 'ari_client.dart';
 
 import 'dart:convert' show utf8;
 
-class wsSipServer {
-  wsSipServer(String ip, int port)
-      : this.ip = ip,
-        this.port = port {
+class WsServer {
+  WsServer(
+      String ip, int port, String redisIp, int redisPort, String redisPassword)
+      : ip = ip,
+        port = port,
+        redisIp = redisIp,
+        redisPort = redisPort,
+        redisPassword = redisPassword {
     conn = RedisConnection();
-    conn!.connect('10.44.0.55', 6379).then((Command command) {
+    conn!.connect(redisIp, redisPort).then((Command command) {
       print("connected to redis");
-      command.send_object(["AUTH", "zsco@123deraboof"]).then((var response) {
+      command.send_object(["AUTH", redisPassword]).then((var response) {
         print(response);
       });
       cmd = command;
     });
+
+    intialize();
   }
 
   void intialize() async {
-    Ari ariClient = Ari();
-    WebSocket ariSocket = await ariClient.connect();
+    //Ari ariClient = Ari();
+    // WebSocket ariSocket = await ariClient.connect();
 
-    Command command = await RedisConnection().connect('10.44.0.55', 6379);
-    command.send_object(["AUTH", "zsco@123deraboof"]).then((var response) {
+    Command command = await RedisConnection().connect(redisIp, redisPort);
+    command.send_object(["AUTH", redisPassword]).then((var response) {
       //print(response);
     });
-    //final pubsub = PubSub(command);
-    //pubsub.sub(["monkey"]);
-
-    ariSocket.listen((event) {
-      //print(event);
-      command.send_object(["PUBLISH", "monkey", event]).then((var response) {
-        //print(event);
-      });
-      //print(event);
-    });
-    HttpClient client = HttpClient();
-    //client.setCredentials(scope, creds);
-
-    // client.addCredentials(
-    //    uri,scheme, HttpClientBasicCredentials("asterisk", "aseterisk"));
-
-    // client.authenticate = (uri, scheme, realm) {
-//   client.addCredentials(
-//       uri,scheme, HttpClientBasicCredentials("asterisk", "aseterisk"));
-//       return true;
-// };
 
     HttpServer.bind(InternetAddress(ip), port).then((server) {
       print('Listening on ws://${server.address.address}:${server.port}');
@@ -60,189 +45,9 @@ class wsSipServer {
           WebSocketTransformer.upgrade(request).then(handleWebSocket);
           print("Status code: ${request.response.statusCode}");
         } else {
-          //print("Request received: ${request.uri.path}");
-          void sendResponse(HttpClientRequest requestProxied) {
-//void addCredentials(Uri url, String realm, HttpClientCredentials credentials);
-//               client.authenticate = (uri, scheme, realm) {
-//   client.addCredentials(
-//       uri,scheme, HttpClientBasicCredentials("asterisk", "aseterisk"));
-
-// };
-            requestProxied.close().then((response) {
-              response.transform(utf8.decoder).join().then((stringData) {
-                request.response.statusCode = response.statusCode;
-                request.response.write(stringData);
-                //request.response.statusCode=response.statusCode;
-
-                request.response.close();
-
-                print("Data form server: $stringData");
-                print("Status code: ${response.statusCode}");
-              });
-            });
-          }
-
-          var Url = //
-
-              Uri(
-                  scheme: "http",
-                  userInfo: "",
-                  host: "10.44.0.55",
-                  port: 8088,
-                  path: request.uri.toString(),
-                  //Iterable<String>? pathSegments,
-                  query: "",
-                  queryParameters: {'api_key': 'asterisk:asterisk'}
-                  //String? fragment
-                  );
-
-          if (request.uri.path.indexOf("/ari/api-docs") != -1) {
-            client.getUrl(Url).then((requestProxied) {
-              requestProxied.close().then((response) {
-                response.transform(utf8.decoder).join().then((stringData) {
-                  var decode = jsonDecode(stringData);
-                  //print("Response: ${decode["basePath"]}");
-                  var uriToChange = Uri.parse(decode["basePath"]);
-                  //print("Uri: $uriToChange");
-                  // print("Host: ${uriToChange.host}");
-                  var changedTo =
-                      "http://${server.address.address}:${server.port}${uriToChange.path}";
-                  decode["basePath"] = changedTo;
-                  //print("Changing to: ${decode["basePath"]}");
-                  request.response.statusCode = response.statusCode;
-                  request.response.write(jsonEncode(decode));
-                  //request.response.statusCode=response.statusCode;
-                  request.response.close();
-                });
-              });
-            });
-          } else {
-            print("Request: ${request.requestedUri}");
-            print("Method: ${request.method}");
-            print("User info: ${request.uri.userInfo}");
-            print("Scheme: ${request.uri.scheme}");
-            print("Path: ${request.uri.path}");
-            print("Query: ${request.uri.query}");
-            print("Query parameters: ${request.uri.queryParametersAll}");
-            print("Data: ${request.uri.data}");
-
-            // final credentionals = <String, String>{
-            //   'api_key': 'asterisk:astersk'
-            // };
-// final gasGiants = <int, String>{5: 'Jupiter', 6: 'Saturn'};
-// final iceGiants = <int, String>{7: 'Uranus', 8: 'Neptune'};
-// planets.addEntries(gasGiants.entries);
-// planets.addEntries(iceGiants.entries);
-            //request.uri.queryParameters.addEntries(credentionals.entries);
-
-            if (request.contentLength == -1) {
-              //_sendResponse(request, ''); // Handle empty content
-            } else {
-              utf8.decodeStream(request).then((data) {
-                //} => _sendResponse(request, data));
-
-                var Url = //
-
-                    Uri(
-                        scheme: "http",
-                        userInfo: request.uri.userInfo,
-                        host: "10.44.0.55",
-                        port: 8088,
-                        path: request.uri.path,
-                        //Iterable<String>? pathSegments,
-                        query: request.uri.query,
-                        queryParameters: {'api_key': 'asterisk:astersk'}
-                        //String? fragment
-                        );
-
-                switch (request.method.toLowerCase()) {
-                  case "post":
-                    {
-                      //if (request.method.toLowerCase() == "post") {
-                      Url = //
-
-                          Uri(
-                              scheme: "http",
-                              userInfo: request.uri.userInfo,
-                              host: "10.44.0.55",
-                              port: 8088,
-                              path: request.uri.path,
-                              //Iterable<String>? pathSegments,
-                              query: request.uri.query,
-                              queryParameters: {'api_key': 'asterisk:astersk'}
-                              //String? fragment
-                              );
-                      client.postUrl(Url).then(
-                          (requestProxied) => sendResponse(requestProxied));
-                      //}
-                    }
-                  case "get":
-                    {
-                      //else if (request.method.toLowerCase() == "get") {
-                      Url = //
-
-                          Uri(
-                              scheme: "http",
-                              userInfo: request.uri.userInfo,
-                              host: "10.44.0.55",
-                              port: 8088,
-                              path: request.uri.path,
-                              //Iterable<String>? pathSegments,
-                              query: request.uri.query,
-                              queryParameters: {'api_key': 'asterisk:astersk'}
-                              //String? fragment
-                              );
-                      client.getUrl(Url).then(
-                          (requestProxied) => sendResponse(requestProxied));
-                      // requestProxied.headers.set("Authorization", 'api_key:asterisk:asterisk');
-                      //}
-                    }
-                  case "put":
-                    {
-                      // else if (request.method.toLowerCase() == "put") {
-                      Url = //
-
-                          Uri(
-                              scheme: "http",
-                              userInfo: request.uri.userInfo,
-                              host: "10.44.0.55",
-                              port: 8088,
-                              path: request.uri.path,
-                              //Iterable<String>? pathSegments,
-                              query: request.uri.query,
-                              queryParameters: {'api_key': 'asterisk:astersk'}
-                              //String? fragment
-                              );
-                      client.putUrl(Url).then(
-                          (requestProxied) => sendResponse(requestProxied));
-                      //}
-                    }
-
-                  case "delete":
-                    {
-                      //else if (request.method.toLowerCase() == "delete") {
-                      Url = //
-
-                          Uri(
-                              scheme: "http",
-                              userInfo: request.uri.userInfo,
-                              host: "10.44.0.55",
-                              port: 8088,
-                              path: request.uri.path,
-                              //Iterable<String>? pathSegments,
-                              query: request.uri.query,
-                              queryParameters: {'api_key': 'asterisk:astersk'}
-                              //String? fragment
-                              );
-                      client.deleteUrl(Url).then(
-                          (requestProxied) => sendResponse(requestProxied));
-                      //}
-                    }
-                  //print(request.uri.scheme);
-                } //print(request.uri.scheme);
-              });
-            }
-          }
+          request.response
+            ..statusCode = HttpStatus.forbidden
+            ..close();
         }
       });
     });
@@ -264,9 +69,9 @@ class wsSipServer {
     }
 
     final connection = RedisConnection();
-    Command command = await connection.connect('10.44.0.55', 6379);
+    Command command = await connection.connect(redisIp, redisPort);
 
-    command.send_object(["AUTH", "zsco@123deraboof"]);
+    command.send_object(["AUTH", redisPassword]);
 
     PubSub pubsub = PubSub(command);
     pubsub.subscribe(["monkey"]);
@@ -367,4 +172,8 @@ class wsSipServer {
   int port;
   RedisConnection? conn; // = RedisConnection();
   Command? cmd;
+
+  String redisIp;
+  int redisPort;
+  String redisPassword;
 }

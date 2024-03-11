@@ -8,6 +8,7 @@ import 'package:dart_ari_proxy/ari_client/events/stasis_start.dart';
 
 //import 'ari_client/ChannelsApi.dart';
 import 'ari_client/events/channel_destroyed.dart';
+import 'ari_client/events/channel_state_change.dart';
 import 'ari_client/events/stasis_end.dart';
 
 export 'ari_client/ChannelsApi.dart';
@@ -102,7 +103,21 @@ class Ari {
             channel.handlers[data['type']]!(channelDestroyed, channel);
           }
         }
-
+      case 'ChannelStateChange':
+        ChannelStateChange channelStateChange =
+            ChannelStateChange.fromJson(data);
+        if (handlers[data['type']] != null) {
+          handlers[data['type']]!(
+              channelStateChange, channelStateChange.channel);
+        }
+        if (statisChannels[data['channel']['id']] != null) {
+          Channel channel = statisChannels[data['channel']['id']]!;
+          if (channel.handlers[data['type']] != null) {
+            //print("Event fired from existing channel");
+            channel.handlers[data['type']]!(
+                channelStateChange, channelStateChange.channel);
+          }
+        }
       //handlers[data['type']]!(data);
     }
   }

@@ -4,7 +4,10 @@ import 'dart:io';
 import 'package:dart_ari_proxy/ari_client.dart';
 import 'package:dart_ari_proxy/ari_client/BridgesApi.dart';
 import 'package:dart_ari_proxy/ari_client/events/stasis_start.dart';
+import 'package:dart_ari_proxy/ari_http_proxy.dart';
+import 'package:dart_ari_proxy/globals.dart';
 import 'package:dart_ari_proxy/recorder/rtp_server.dart';
+import 'package:dart_ari_proxy/ari_client/statistics.dart';
 
 import 'package:dotenv/dotenv.dart';
 
@@ -40,12 +43,22 @@ stasisStart(StasisStart event, Channel channel) {
       getOrCreateHoldingBridge(channel);
     });
 
+    actveCalls[channel.id] = channel.id;
+    callsWaiting[channel.id] = channel.id;
+    CallsInConversation[channel.id] = channel.id;
+
     //actveCalls.set(channel.id, channel.id);
     //callsWaiting.set(channel.id, channel.id);
 
     //errors.set(channel.id, 0);
     //sendCdr();
   }
+  // else{
+  //   if(event.args.length > 0 && event.args[0] == 'dialed'){
+
+  //   }
+
+  // }
 }
 
 void getOrCreateHoldingBridge(Channel channel) {
@@ -143,6 +156,12 @@ void originate(Channel channel, Bridge holdingBridge) async {
     channel.removeAllListeners('StasisEnd');
     //postCdr(cdr);
     //sendCdr();
+
+    actveCalls.remove(channel.id);
+
+    callsWaiting.remove(channel.id);
+
+    CallsInConversation.remove(channel.id);
     safeHangup(dialed);
   });
 
@@ -179,7 +198,7 @@ void originate(Channel channel, Bridge holdingBridge) async {
   });
   //var agent = {} as Agent;
   dialed.on('ChannelStateChange', (event, dialed) {
-    //print('Dialed status:');
+    print('Dialed status to: ${event.channel.state}');
     //print(event);
 
     //cdr.dstchannel = dialed.id;
@@ -192,8 +211,13 @@ void originate(Channel channel, Bridge holdingBridge) async {
     //callsWaiting.delete(channel.id);
     if (event.channel.state == 'Up') {
       //CallsInConversation.set(channel.id, channel.id);
-      //print('Channel state:', event.channel.state);
+      print('Dialed status to: ${event.channel.state}');
       // cdr.disposition = 'Answered';
+
+      callsWaiting.remove(channel.id);
+      CallsInConversation[channel.id] = channel.id;
+
+      //CallsInConversation.remove(channel.id);
       callSucceed = true;
       //if (agent != null) agent.loggedIn = true;
     }
@@ -339,6 +363,15 @@ void main(List<String> arguments) async {
   rtpIp = env['RTP_ADDRESS']!;
   port = int.parse(env['RTP_PORT']!);
   print("Listening on: $rtpIp:$port");
+
+  String wsIp = env['WS_SERVER_ADDRESS']!;
+  int wsPort = int.parse(env['WS_SERVER_PORT']!);
+  String redisIp = env['REDIS_ADDRESS']!;
+  int redisPort = int.parse(env['REDIS_PORT']!);
+  String redisPassword = env['REDIS_PASSWORD']!;
+  wsServer = WsServer(wsIp, wsPort, redisIp, redisPort, redisPassword);
+
+  //wsServer!.intialize();
   // wsSipServer proxy=wsSipServer("127.0.0.1",8082);
   // proxy.intialize();
 

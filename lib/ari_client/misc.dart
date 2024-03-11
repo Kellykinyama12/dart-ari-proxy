@@ -10,10 +10,9 @@ class CallerID {
      */
   String number; //: string;
 
-  factory CallerID.fromJson(dynamic json){
-    return CallerID(
-      json['name'] as String,
-      json['number'] as String
-    );
+  factory CallerID.fromJson(dynamic json) {
+    return CallerID(json['name'] as String, json['number'] as String);
   }
 }
+
+class Statistics {}
