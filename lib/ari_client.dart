@@ -68,22 +68,22 @@ class Ari {
         }
 
       case 'StasisEnd':
-        Channel channel;
+        Channel stasChannel;
         StasisEnd stasisEnd = StasisEnd.fromJson(data);
-        if (statisChannels[data['channel']['id']] == null) {
-          throw "Channel should be in statisChannels map";
-        } else {
-          channel = statisChannels[data['channel']['id']]!;
-        }
+        //if (statisChannels[data['channel']['id']] == null) {
+        //throw "Channel should be in statisChannels map";
+        //} else {
+        stasChannel = statisChannels[data['channel']['id']]!;
+        //}
         if (handlers[data['type']] != null) {
-          handlers[data['type']]!(stasisEnd, channel);
+          handlers[data['type']]!(stasisEnd, stasisEnd.channel);
         }
-        if (channel.handlers[data['type']] != null) {
+        if (stasChannel.handlers[data['type']] != null) {
           //print("Event ${data['type']} fired from channel in stasis");
-          channel.handlers[data['type']]!(stasisEnd, channel);
+          stasChannel.handlers[data['type']]!(stasisEnd, stasisEnd.channel);
         }
 
-        statisChannels.remove(channel.id);
+        statisChannels.remove(stasChannel.id);
 
       case 'ChannelDestroyed':
         ChannelDestroyed channelDestroyed = ChannelDestroyed.fromJson(data);

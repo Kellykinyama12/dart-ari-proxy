@@ -2,15 +2,19 @@ import '../ChannelsApi.dart';
 import 'event.dart';
 
 class ChannelStateChange extends Event {
-  ChannelStateChange(this.channel, this.json) : super('ChannelStateChange');
+  ChannelStateChange(this.channel, this.timestamp, this.json)
+      : super('ChannelStateChange');
   /**
      * Channel.
      */
+  DateTime timestamp;
   Channel channel; //: Channel;
   dynamic json;
 
   factory ChannelStateChange.fromJson(dynamic json) {
     Channel channel = Channel.fromJson(json['channel']);
-    return ChannelStateChange(channel, json as dynamic);
+
+    DateTime timestamp = DateTime.parse(json['timestamp']);
+    return ChannelStateChange(channel, timestamp, json as dynamic);
   }
 }

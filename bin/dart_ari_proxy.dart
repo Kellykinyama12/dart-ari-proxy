@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:dart_ari_proxy/ari_client.dart';
 import 'package:dart_ari_proxy/ari_client/BridgesApi.dart';
+import 'package:dart_ari_proxy/ari_client/cdr.dart';
+import 'package:dart_ari_proxy/ari_client/dashboard_client.dart';
 import 'package:dart_ari_proxy/ari_client/events/stasis_start.dart';
 import 'package:dart_ari_proxy/ari_http_proxy.dart';
 import 'package:dart_ari_proxy/globals.dart';
@@ -20,9 +22,13 @@ Ari client = Ari();
 String rtpIp = "10.100.54.52";
 int port = 5464;
 int rtpPortCounter = 0;
+var endpoint = "SIP/7000/2035";
 
 String regex =
     r'[^\p{Alphabetic}\p{Mark}\p{Decimal_Number}\p{Connector_Punctuation}\p{Join_Control}\s]+';
+
+Map<String, Cdr> cdrRecords = {};
+Map<String, CallRecording> voiceRecords = {};
 
 stasisStart(StasisStart event, Channel channel) {
   bool dialed = event.args.length > 0 ? event.args[0] == 'dialed' : false;
@@ -30,6 +36,9 @@ stasisStart(StasisStart event, Channel channel) {
     print('Channel ${channel.name} has entered our application');
     print(channel.handlers);
     dialed = true;
+
+    rtpPortCounter++;
+    if (rtpPortCounter - port > 2000) rtpPortCounter = 0;
   }
   if (!dialed) {
     //throw variable;
@@ -46,6 +55,14 @@ stasisStart(StasisStart event, Channel channel) {
     actveCalls[channel.id] = channel.id;
     callsWaiting[channel.id] = channel.id;
     CallsInConversation[channel.id] = channel.id;
+
+    cdrRecords[channel.id] = Cdr(
+        channel: channel.id,
+        clid: channel.caller.name,
+        src: channel.caller.number,
+        dst: 'c-17',
+        dcontext: 'custom-context',
+        calldate: event.timestamp.toString());
 
     //actveCalls.set(channel.id, channel.id);
     //callsWaiting.set(channel.id, channel.id);
@@ -110,7 +127,7 @@ void originate(Channel channel, Bridge holdingBridge) async {
       // ignore error
     });
   }, channels: [channel.id]);
-  var endpoint = "SIP/7000/2035";
+  //var endpoint = "SIP/7000/2035";
 
   var dialed = await client.channel(endpoint: endpoint);
   //var bridge = await client.bridge();
@@ -121,14 +138,13 @@ void originate(Channel channel, Bridge holdingBridge) async {
 
   // String rtpIp = "10.100.54.52";
   // int port = 5464;
+  final filename = dialed.caller.number +
+      DateTime.now()
+          .toString()
+          .replaceAll(RegExp(regex, unicode: true), '')
+          .replaceAll(" ", '');
 
-  rtp_server(
-      rtpIp,
-      port + rtpPortCounter,
-      dialed.caller.number +
-          DateTime.now()
-              .toString()
-              .replaceAll(RegExp(regex, unicode: true), ''));
+  rtp_server(rtpIp, port + rtpPortCounter, filename);
 
   Channel externalChannel = await client.externalMedia(
     (err, externalChannel) {
@@ -139,8 +155,7 @@ void originate(Channel channel, Bridge holdingBridge) async {
     external_host: '$rtpIp:${port + rtpPortCounter}',
     format: 'alaw',
   );
-  rtpPortCounter++;
-  if (rtpPortCounter - port > 2000) rtpPortCounter = 0;
+
   //print("Externa channel: ${externalChannel}");
   Bridge mixingBridge = await client.bridge(type: ['mixing']);
 
@@ -164,6 +179,22 @@ void originate(Channel channel, Bridge holdingBridge) async {
 
     CallsInConversation.remove(channel.id);
     safeHangup(dialed);
+    safeHangup(externalChannel);
+
+    if (cdrRecords[channel.id] != null) {
+      cdrRecords[channel.id]!.hangupdate = event.timestamp.toString();
+
+      if (dsbClient != null) {
+        dsbClient!.send_cdr(cdrRecords[channel.id]!);
+      }
+    }
+
+    if (voiceRecords[channel.id] != null && dsbClient != null) {
+      voiceRecords[channel.id]!.duration_number = event.timestamp.toString();
+      dsbClient!.send_call_records(voiceRecords[channel.id]!);
+    }
+    voiceRecords.remove(channel.id);
+    cdrRecords.remove(channel.id);
   });
 
   // externalChannel.on('StasisStart', (event, streamed) {
@@ -175,7 +206,7 @@ void originate(Channel channel, Bridge holdingBridge) async {
   //print(externalChannel.handlers);
 
   dialed.on('ChannelDestroyed', (event, dialed) {
-    print("Saftely hingup up in originate on ChannelDestroyed");
+    print("Saftely hangup up in originate on ChannelDestroyed");
     //sendCdr(event);
     //CallsInConversation.delete(channel.id);
     //cdr.hangupdate = event.timestamp;
@@ -196,6 +227,8 @@ void originate(Channel channel, Bridge holdingBridge) async {
     //postCdr(cdr);
     //sendCdr(cdr);
     //print(cdr);
+    safeHangup(externalChannel);
+    safeHangup(channel);
   });
   //var agent = {} as Agent;
   dialed.on('ChannelStateChange', (event, dialed) {
@@ -221,6 +254,17 @@ void originate(Channel channel, Bridge holdingBridge) async {
       //CallsInConversation.remove(channel.id);
       callSucceed = true;
       //if (agent != null) agent.loggedIn = true;
+
+      if (cdrRecords[channel.id] != null) {
+        cdrRecords[channel.id]!.answerdate = event.timestamp.toString();
+        cdrRecords[channel.id]!.dstchannel = dialed.id;
+      }
+
+      voiceRecords[channel.id] = CallRecording(
+          file_name: filename,
+          file_path: filename,
+          agent_number: endpoint,
+          phone_number: cdrRecords[channel.id]!.src!);
     }
     //var e =JSON.parse(event);
     //sendCdr();
@@ -302,7 +346,7 @@ void joinMixingBridge(Channel channel, Channel dialed, Bridge holdingBridge,
     Bridge mixingBridge) async {
   dialed.on('StasisEnd', (event, dialed) {
     //sendCdr(cdr);
-    dialedExit(dialed, mixingBridge);
+    dialedExit(channel, mixingBridge);
   });
 
   dialed.answer((err) {
@@ -348,6 +392,8 @@ dialedExit(Channel dialed, Bridge mixingBridge) {
     if (err) {
       throw err;
     }
+
+    dialed.hangup((err) => {});
   });
 }
 
@@ -370,7 +416,15 @@ void main(List<String> arguments) async {
   String redisIp = env['REDIS_ADDRESS']!;
   int redisPort = int.parse(env['REDIS_PORT']!);
   String redisPassword = env['REDIS_PASSWORD']!;
+
+  endpoint = env['PHONE_ENDPOINT']!;
+  print("Endpoint: $endpoint");
   wsServer = WsServer(wsIp, wsPort, redisIp, redisPort, redisPassword);
+
+  String voice_records = env['DASHBOARD_RECORDER_ENDPOINT']!;
+  String cdr_records = env['DASHBOARD_CDR_ENDPOINT']!;
+
+  dsbClient = DasboardClient(Uri.parse(voice_records), Uri.parse(cdr_records));
 
   //wsServer!.intialize();
   // wsSipServer proxy=wsSipServer("127.0.0.1",8082);

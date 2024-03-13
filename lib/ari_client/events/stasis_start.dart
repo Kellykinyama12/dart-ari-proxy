@@ -3,7 +3,8 @@ import 'package:dart_ari_proxy/ari_client/events/event.dart';
 import '../ChannelsApi.dart';
 
 class StasisStart extends Event {
-  StasisStart(this.args, this.channel, this.json) : super("StasisStart") {}
+  StasisStart(this.args, this.timestamp, this.channel, this.json)
+      : super("StasisStart") {}
   /**
      * Arguments to the application.
      */
@@ -17,13 +18,15 @@ class StasisStart extends Event {
   /**
      * Replace_channel.
      */
+  DateTime timestamp;
   Channel? replace_channel;
   dynamic json;
 
   factory StasisStart.fromJson(dynamic json) {
     Channel channel = Channel.fromJson(json['channel']);
+    DateTime timestamp = DateTime.parse(json['timestamp']);
     return StasisStart(
-        json['args'] as dynamic, channel as Channel, json as dynamic);
+        json['args'] as dynamic, timestamp, channel, json as dynamic);
   }
 
   // @override

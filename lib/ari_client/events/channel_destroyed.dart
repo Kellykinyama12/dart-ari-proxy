@@ -2,7 +2,8 @@ import '../ChannelsApi.dart';
 import 'event.dart';
 
 class ChannelDestroyed extends Event {
-  ChannelDestroyed(this.cause, this.cause_txt, this.channel, this.json)
+  ChannelDestroyed(
+      this.cause, this.cause_txt, this.channel, this.timestamp, this.json)
       : super("ChannelDestroyed");
   /**
      * Integer representation of the cause of the hangup.
@@ -17,13 +18,16 @@ class ChannelDestroyed extends Event {
   /**
      * Channel.
      */
+  DateTime timestamp;
   Channel channel; //: Channel;
 
   dynamic json;
 
   factory ChannelDestroyed.fromJson(dynamic json) {
     Channel channel = Channel.fromJson(json['channel']);
+
+    DateTime timestamp = DateTime.parse(json['timestamp']);
     return ChannelDestroyed(json['cause'] as num, json['cause_txt'] as String,
-        channel as Channel, json as dynamic);
+        channel, timestamp, json as dynamic);
   }
 }

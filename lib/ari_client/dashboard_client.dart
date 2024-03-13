@@ -12,6 +12,7 @@ class DasboardClient {
   }
 
   Future<dynamic> send_cdr(Cdr cdr) async {
+    var params = cdr.parse();
     var uri = Uri(
         scheme: cdr_records.scheme,
         userInfo: cdr_records.userInfo,
@@ -20,21 +21,22 @@ class DasboardClient {
         path: cdr_records.path,
         //Iterable<String>? pathSegments,
         query: cdr_records.query,
-        queryParameters: cdr.parse()
+        queryParameters: params
         //String? fragment
         );
-
+    //print(params);
     //dsvar uri = Uri.http(baseUrl, '/channels', qParams);
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
     print(response);
     final String stringData = await response.transform(utf8.decoder).join();
     print(response.statusCode);
-    print(stringData);
+    //print(stringData);
     return (statusCode: response.statusCode, resp: stringData);
   }
 
   Future<dynamic> send_call_records(CallRecording cdr) async {
+    var params = cdr.parse();
     var uri = Uri(
         scheme: voice_records.scheme,
         userInfo: voice_records.userInfo,
@@ -43,9 +45,11 @@ class DasboardClient {
         path: voice_records.path,
         //Iterable<String>? pathSegments,
         query: voice_records.query,
-        queryParameters: cdr.parse()
+        queryParameters: params
         //String? fragment
         );
+
+    print(params);
 
     //dsvar uri = Uri.http(baseUrl, '/channels', qParams);
     HttpClientRequest request = await client.postUrl(uri);
