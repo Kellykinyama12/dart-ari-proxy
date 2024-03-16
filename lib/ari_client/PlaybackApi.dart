@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:convert';
 
+import 'package:dart_ari_proxy/ari_client/resource.dart';
+
 import 'models.dart';
 
 class PlaybackApi {
@@ -17,7 +19,7 @@ class PlaybackApi {
     return response;
   }
 
-  Future<dynamic> stop(String playbackId) async {
+  static Future<dynamic> stop(String playbackId) async {
     var uri = Uri(
         scheme: "http",
         userInfo: "",
@@ -52,4 +54,108 @@ class PlaybackApi {
   }
 
   //Params params;
+}
+
+class Playback extends Resource {
+  Playback(
+      {this.id,
+      this.media_uri,
+      this.next_media_uri,
+      this.target_uri,
+      this.language,
+      this.state,
+      this.json});
+  /**
+     * ID for this playback operation.
+     */
+  String? id; //: string;
+
+  /**
+     * The URI for the media currently being played back.
+     */
+  String? media_uri; //: string;
+
+  /**
+     * If a list of URIs is being played, the next media URI to be played back.
+     */
+  String? next_media_uri; //?: string;
+
+  /**
+     * URI for the channel or bridge to play the media on.
+     */
+  String? target_uri; //: string;
+
+  /**
+     * For media types that support multiple languages, the language requested for playback.
+     */
+  String? language; //: string;
+
+  /**
+     * Current state of the playback operation.
+     */
+  String? state; //: string;
+
+  dynamic json;
+
+  Map<String, Function(dynamic event, Playback playback)> handlers = {};
+
+  void on(String event, Function(dynamic event, Playback playback) callback) {
+    //print("Adding channel event handler for $event");
+    handlers[event] = callback;
+  }
+
+  /**
+     * Get a playbacks details.
+     */
+  void get(Function(Error, Playback) callback) {}
+
+  /**
+     * Get a playbacks details.
+     */
+  //get(): Promise<Playback>;
+
+  /**
+     * Stop a playback.
+     */
+  void stop(Function(bool) callback) {
+    var resp = PlaybackApi.stop(id!);
+    resp.then((value) {
+      //print(value.resp);
+      callback(false);
+    });
+  }
+
+  /**
+     * Stop a playback.
+     */
+  //stop(): Promise<void>;
+
+  /**
+     * Control a playback.
+     *
+     * @param params.operation - Operation to perform on the playback.
+     */
+  control(Function(Error) callback, {required String operation}) {}
+
+  /**
+     * Control a playback.
+     *
+     * @param params.operation - Operation to perform on the playback.
+     */
+  //control(params: { operation: string }): Promise<void>;
+
+  factory Playback.fromJson(dynamic json) {
+    //Channel channel = Channel.fromJson(json['channel']);
+    String? next_media_uri;
+    if (json['next_media_uri'] != null) next_media_uri = json['next_media_uri'];
+    //print(json);
+    return Playback(
+        id: json['id'] as String,
+        media_uri: json['media_uri'] as String,
+        next_media_uri: next_media_uri,
+        target_uri: json['target_uri'] as String,
+        language: json['language'],
+        state: json['state'] as String,
+        json: json);
+  }
 }

@@ -5,10 +5,15 @@ import 'package:dart_ari_proxy/ari_client/BridgesApi.dart';
 import 'package:dart_ari_proxy/ari_client/ChannelsApi.dart';
 //import 'package:dart_ari_proxy/ari_client/events/event.dart';
 import 'package:dart_ari_proxy/ari_client/events/stasis_start.dart';
+import 'package:uuid/uuid.dart';
 
 //import 'ari_client/ChannelsApi.dart';
+import 'ari_client/PlaybackApi.dart';
+import 'ari_client/PlaybackApi.dart';
 import 'ari_client/events/channel_destroyed.dart';
+import 'ari_client/events/channel_dtmf_received.dart';
 import 'ari_client/events/channel_state_change.dart';
+import 'ari_client/events/playback_finished.dart';
 import 'ari_client/events/stasis_end.dart';
 
 export 'ari_client/ChannelsApi.dart';
@@ -18,6 +23,7 @@ class Ari {
   Map<String, Function(dynamic event, Channel channel)> handlers = {};
 
   Map<String, Channel> statisChannels = {};
+  Map<String, Playback> statisPlaybacks = {};
 
   void on(String event, Function(dynamic event, Channel channel) callback) {
     handlers[event] = callback;
@@ -44,15 +50,17 @@ class Ari {
         //   }
         // }
         StasisStart stasisStart = StasisStart.fromJson(data);
-        if (statisChannels[data['channel']['id']] == null) {
+        channel = Channel.fromJson(data['channel']);
+        if (statisChannels[data['channel']['id']] != null) {
           // if (stasisStart.args.length > 0) {
           //   throw "This channel should be in statisChannels";
           // }
-          channel = Channel.fromJson(data['channel']);
-
-          statisChannels[channel.id] = channel;
+          if (statisChannels[data['channel']['id']]!.handlers.isNotEmpty) {
+            channel.handlers = statisChannels[data['channel']['id']]!.handlers;
+            statisChannels[data['channel']['id']] = channel;
+          }
         } else {
-          channel = statisChannels[data['channel']['id']]!;
+          statisChannels[data['channel']['id']] = channel;
         }
         if (handlers[data['type']] != null) {
           handlers[data['type']]!(stasisStart, channel);
@@ -68,36 +76,56 @@ class Ari {
         }
 
       case 'StasisEnd':
-        Channel stasChannel;
+        Channel channel;
         StasisEnd stasisEnd = StasisEnd.fromJson(data);
-        //if (statisChannels[data['channel']['id']] == null) {
-        //throw "Channel should be in statisChannels map";
-        //} else {
-        stasChannel = statisChannels[data['channel']['id']]!;
-        //}
+        channel = Channel.fromJson(data['channel']);
+        if (statisChannels[data['channel']['id']] != null) {
+          // if (stasisStart.args.length > 0) {
+          //   throw "This channel should be in statisChannels";
+          // }
+          if (statisChannels[data['channel']['id']]!.handlers.isNotEmpty) {
+            channel.handlers = statisChannels[data['channel']['id']]!.handlers;
+            statisChannels[data['channel']['id']] = channel;
+          }
+        } else {
+          statisChannels[data['channel']['id']] = channel;
+        }
         if (handlers[data['type']] != null) {
           handlers[data['type']]!(stasisEnd, stasisEnd.channel);
         }
-        if (stasChannel.handlers[data['type']] != null) {
+        if (channel.handlers[data['type']] != null) {
           //print("Event ${data['type']} fired from channel in stasis");
-          stasChannel.handlers[data['type']]!(stasisEnd, stasisEnd.channel);
+          channel.handlers[data['type']]!(stasisEnd, stasisEnd.channel);
         }
 
-        statisChannels.remove(stasChannel.id);
+        statisChannels.remove(channel.id);
 
       case 'ChannelDestroyed':
         ChannelDestroyed channelDestroyed = ChannelDestroyed.fromJson(data);
+        Channel channel = Channel.fromJson(data['channel']);
+
+        if (statisChannels[data['channel']['id']] != null) {
+          // if (stasisStart.args.length > 0) {
+          //   throw "This channel should be in statisChannels";
+          // }
+          if (statisChannels[data['channel']['id']]!.handlers.isNotEmpty) {
+            channel.handlers = statisChannels[data['channel']['id']]!.handlers;
+            statisChannels[data['channel']['id']] = channel;
+          }
+        } else {
+          statisChannels[data['channel']['id']] = channel;
+        }
         if (handlers[data['type']] != null) {
           //print(data['type']);
-          Channel channel = Channel.fromJson(data['channel']);
-          if (statisChannels[channel.id] == null) {
-            statisChannels[channel.id] = channel;
-          }
+          // Channel channel = Channel.fromJson(data['channel']);
+          // if (statisChannels[channel.id] == null) {
+          //   statisChannels[channel.id] = channel;
+          // }
 
           handlers[data['type']]!(channelDestroyed, channel);
         }
         if (statisChannels[data['channel']['id']] != null) {
-          Channel channel = statisChannels[data['channel']['id']]!;
+          //Channel channel = statisChannels[data['channel']['id']]!;
           if (channel.handlers[data['type']] != null) {
             //print("Event fired from existing channel");
             channel.handlers[data['type']]!(channelDestroyed, channel);
@@ -106,16 +134,81 @@ class Ari {
       case 'ChannelStateChange':
         ChannelStateChange channelStateChange =
             ChannelStateChange.fromJson(data);
+        Channel channel = Channel.fromJson(data['channel']);
+
+        if (statisChannels[data['channel']['id']] != null) {
+          // if (stasisStart.args.length > 0) {
+          //   throw "This channel should be in statisChannels";
+          // }
+          if (statisChannels[data['channel']['id']]!.handlers.isNotEmpty) {
+            channel.handlers = statisChannels[data['channel']['id']]!.handlers;
+            statisChannels[data['channel']['id']] = channel;
+          }
+        } else {
+          statisChannels[data['channel']['id']] = channel;
+        }
         if (handlers[data['type']] != null) {
-          handlers[data['type']]!(
-              channelStateChange, channelStateChange.channel);
+          handlers[data['type']]!(channelStateChange, channel);
         }
         if (statisChannels[data['channel']['id']] != null) {
-          Channel channel = statisChannels[data['channel']['id']]!;
           if (channel.handlers[data['type']] != null) {
             //print("Event fired from existing channel");
-            channel.handlers[data['type']]!(
-                channelStateChange, channelStateChange.channel);
+            channel.handlers[data['type']]!(channelStateChange, channel);
+          }
+        }
+
+      case 'ChannelDtmfReceived':
+        ChannelDtmfReceived channelDtmfReceived =
+            ChannelDtmfReceived.fromJson(data);
+        Channel channel = Channel.fromJson(data['channel']);
+
+        if (statisChannels[data['channel']['id']] != null) {
+          // if (stasisStart.args.length > 0) {
+          //   throw "This channel should be in statisChannels";
+          // }
+          if (statisChannels[data['channel']['id']]!.handlers.isNotEmpty) {
+            channel.handlers = statisChannels[data['channel']['id']]!.handlers;
+            statisChannels[data['channel']['id']] = channel;
+          }
+        } else {
+          statisChannels[data['channel']['id']] = channel;
+        }
+        if (handlers[data['type']] != null) {
+          handlers[data['type']]!(channelDtmfReceived, channel);
+        }
+        if (statisChannels[data['channel']['id']] != null) {
+          if (channel.handlers[data['type']] != null) {
+            //print("Event fired from existing channel");
+            channel.handlers[data['type']]!(channelDtmfReceived, channel);
+          }
+        }
+
+      case 'PlaybackFinished':
+        print(data);
+        PlaybackFinished playbackFinished = PlaybackFinished.fromJson(data);
+        Playback playback = Playback.fromJson(data['playback']);
+        print(statisPlaybacks[data['playback']['id']]);
+
+        if (statisPlaybacks[data['playback']['id']] != null) {
+          // if (stasisStart.args.length > 0) {
+          //   throw "This channel should be in statisChannels";
+          // }
+
+          if (statisPlaybacks[data['playback']['id']]!.handlers.isNotEmpty) {
+            playback.handlers =
+                statisPlaybacks[data['playback']['id']]!.handlers;
+            statisPlaybacks[data['playback']['id']] = playback;
+          }
+        } else {
+          statisPlaybacks[data['playback']['id']] = playback;
+        }
+        // if (handlers[data['type']] != null) {
+        //   handlers[data['type']]!(playbackFinished, playback);
+        // }
+        if (statisPlaybacks[data['playback']['id']] != null) {
+          if (playback.handlers[data['type']] != null) {
+            //print("Event fired from existing channel");
+            playback.handlers[data['type']]!(playbackFinished, playback);
           }
         }
       //handlers[data['type']]!(data);
@@ -291,5 +384,21 @@ class Ari {
     var bridgeJson = jsonDecode(resp.resp);
     var bridge = Bridge.fromJson(bridgeJson);
     return bridge;
+  }
+
+  Playback playback(
+      {String? id,
+      String? media_uri,
+      String? next_media_uri,
+      String? target_uri,
+      String? language,
+      String? state}) {
+    var uuid = Uuid();
+    var pbId = uuid.v1();
+
+    var playBack = Playback(id: pbId);
+    statisPlaybacks[pbId] = playBack;
+
+    return playBack;
   }
 }

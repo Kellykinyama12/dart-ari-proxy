@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 
+import 'package:dart_ari_proxy/ari_client/PlaybackApi.dart';
 import 'package:dart_ari_proxy/ari_client/resource.dart';
 
 //import 'events/event.dart';
@@ -735,7 +736,40 @@ class ChannelsApi {
     return response;
   }
 
-  static Future<dynamic> play(String channelId, List<String> media) async {
+  ///
+  /// POST /channels/{channelId}/play
+  ///
+  /// Start playback of media. The media URI may be any of a number of URIs.
+  /// `sound:`, `recording:`, `number:`, `digits:`, `characters:`, and `tone:`
+  /// URIs are supported. This operation creates a playback resource that can
+  /// be used to control the playback of media (pause, rewind, fast forward, etc.)
+  ///
+  /// *'tone:' playback URI added in Asterisk 12.3*
+  ///
+  /// @param {object} params
+  /// @param {string} params.channelId the id of the channel to play the media
+  ///  to.
+  /// @param {string|Array.<string>} params.media The media's URI to play.
+  ///  *Allows multiple media to be passed since Asterisk 14.0*
+  /// @param {string} [params.lang] For sounds, the language for the sound.
+  /// @param {number} [params.offsetms=0] The number of milliseconds to skip
+  ///  before playing the media URI. Allowed range: 0+
+  /// @param {number} [params.skipms=3000] The number of milliseconds to
+  ///  skip for forward/reverse operations. Allowed range: 0+
+  /// @param {string} [params.playbackId] The identifier of the playback that
+  ///  is started. *Param available since Asterisk 12.2*
+  /// @returns {Promise.<Playback>} Resolves with the details of the started
+  ///  playback.
+  ///
+
+  static Future<dynamic> play({
+    required String channelId,
+    required List<String> media,
+    String? lang,
+    num offsetms = 0,
+    num skipms = 3000,
+    String? playbackId,
+  }) async {
     var uri = Uri(
         scheme: "http",
         userInfo: "",
@@ -749,7 +783,8 @@ class ChannelsApi {
           'media': media.join(","),
           'lang': "en",
           'offsetms': '0',
-          'skipms': '3000'
+          'skipms': '3000',
+          'playbackId': playbackId
         }
         //String? fragment
         );
@@ -757,7 +792,7 @@ class ChannelsApi {
     //var uri = Uri(baseUrl);
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
     print(response.statusCode);
     //print(stringData);
@@ -1180,6 +1215,33 @@ class Channel extends Resource {
     ChannelsApi.hangup(id);
   }
 
+  // {
+  //   required String channelId,
+  //   required List<String> media,
+  //   String? lang,
+  //   num offsetms = 0,
+  //   num skipms = 3000,
+  //   String? playbackId,
+  // }
+
+  play(
+    Playback play,
+    Function(bool, Playback) callback, {
+    required List<String> media,
+    String? lang,
+    num offsetms = 0,
+    num skipms = 3000,
+    String? playbackId,
+  }) {
+    var resp =
+        ChannelsApi.play(channelId: id, media: media, playbackId: play.id);
+    resp.then((playReturned) {
+      Playback playback = Playback.fromJson(jsonDecode(playReturned.resp));
+
+      callback(false, playback);
+    });
+  }
+
   // Future<Channel> externalMedia(
   //   Function(bool, Channel) callback, {
   //   required String app, //: string;
@@ -1218,15 +1280,19 @@ class Channel extends Resource {
   //   // });
   // }
 
+  removeListener(String event, Function(dynamic, Channel) callback) {
+    callback(false, this);
+  }
+
   getChannelVar(Function(bool, dynamic) callback, String variable) {
     var resp = ChannelsApi.getChannelVariable(id, variable);
     resp.then((value) {
       print("Channel variable: ${value.resp}");
       //var varJson = jsonDecode(value.resp);
       //throw "You need to see cahnnel Variable";
-      if (value.resp == '{"message":"Provided variable was not found"}')
+      if (value.resp == '{"message":"Provided variable was not found"}') {
         callback(true, value.resp);
-      else {
+      } else {
         //callback(false, value.resp);
         throw value.resp;
       }

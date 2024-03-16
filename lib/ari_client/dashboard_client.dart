@@ -26,13 +26,18 @@ class DasboardClient {
         );
     //print(params);
     //dsvar uri = Uri.http(baseUrl, '/channels', qParams);
-    HttpClientRequest request = await client.postUrl(uri);
-    HttpClientResponse response = await request.close();
-    print(response);
-    final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
-    //print(stringData);
-    return (statusCode: response.statusCode, resp: stringData);
+
+    try {
+      HttpClientRequest request = await client.postUrl(uri);
+      HttpClientResponse response = await request.close();
+      print(response);
+      final String stringData = await response.transform(utf8.decoder).join();
+      print(response.statusCode);
+      //print(stringData);
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      print(err);
+    }
   }
 
   Future<dynamic> send_call_records(CallRecording cdr) async {
@@ -52,13 +57,18 @@ class DasboardClient {
     print(params);
 
     //dsvar uri = Uri.http(baseUrl, '/channels', qParams);
-    HttpClientRequest request = await client.postUrl(uri);
-    HttpClientResponse response = await request.close();
-    print(response);
-    final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
-    print(stringData);
-    return (statusCode: response.statusCode, resp: stringData);
+    try {
+      HttpClientRequest request = await client.postUrl(uri);
+
+      HttpClientResponse response = await request.close();
+      print(response);
+      final String stringData = await response.transform(utf8.decoder).join();
+      print(response.statusCode);
+      print(stringData);
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      print(err);
+    }
   }
 
   HttpClient client = HttpClient();

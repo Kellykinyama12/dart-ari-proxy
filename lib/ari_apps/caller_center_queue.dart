@@ -93,7 +93,7 @@ void getOrCreateHoldingBridge(Channel channel) {
   // });
 
   client.bridges.list((err, bridges) {
-    var holdingBridge = bridges.firstWhere((Bridge candidate) {
+    Bridge holdingBridge = bridges.firstWhere((Bridge candidate) {
       return candidate.bridge_type == 'holding';
     });
 
@@ -405,7 +405,7 @@ void safeHangup(Channel channel) {
   });
 }
 
-void call_center(List<String> arguments) async {
+void call_center_queue(List<String> arguments) async {
   var env = DotEnv(includePlatformEnvironment: true)..load();
   rtpIp = env['RTP_ADDRESS']!;
   port = int.parse(env['RTP_PORT']!);
