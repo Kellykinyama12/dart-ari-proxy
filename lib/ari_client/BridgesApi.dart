@@ -48,12 +48,14 @@ class BridgesAPI {
       'bridgeId': bridgeId,
       'type': type != null ? type.join(',') : "",
     };
+
+    var path = bridgeId != null ? "ari/bridges/${bridgeId}" : "ari/bridges";
     var uri = Uri(
         scheme: "http",
         userInfo: "",
         host: "10.44.0.55",
         port: 8088,
-        path: "ari/bridges/${bridgeId ?? ""}",
+        path: path,
         queryParameters: {
           'api_key': 'asterisk:asterisk',
           'bridgeId': bridgeId,
@@ -362,7 +364,7 @@ class Bridge extends Resource {
       this.video_mode,
       this.video_source_id,
       this.creationtime,
-      this.json);
+      this.jsonData);
   /**
      * Unique identifier for this bridge.
      */
@@ -412,7 +414,7 @@ class Bridge extends Resource {
      * Timestamp when bridge was created.
      */
   DateTime creationtime; //: Date;
-  dynamic json;
+  dynamic jsonData;
 
   factory Bridge.fromJson(dynamic json) {
     //print(json['creationtime']);
@@ -431,42 +433,50 @@ class Bridge extends Resource {
         json as dynamic);
   }
 
-  addChannel(Function(bool) callback,
+  Future<bool> addChannel(
       {required List<String> channels,
       String? role,
       bool? absorbDTMF,
-      bool? mute}) {
-    BridgesAPI.addChannel(this.id, channels);
+      bool? mute}) async {
+    var resp = BridgesAPI.addChannel(id, channels);
+    return false;
   }
 
-  startMoh(Function(bool) callback) {}
-
-  create(Function(bool, Bridge) callback,
-      {String? type, String? bridgeId, String? name}) {
-    List<String> types = [];
-    if (type != null) types = type.split(',');
-
-    var resp = BridgesAPI.create(name, id, types);
-    resp.then((value) {
-      print(value.resp);
-      Bridge? brg = null;
-      if (value.statusCode == 200) {
-        //var bridgesJson = json.decode(value.resp);
-        //brg = Bridge.fromJson(bridgesJson);
-        callback(false, this);
-      } else {
-        // callback(true, brg!);
-      }
-    });
+  Future<bool> startMoh() async {
+    var resp = await BridgesAPI.startMusicOnHold(id);
+    return false;
   }
 
-  removeChannel(Function(bool) callback, {required List<String> channel}) {
-    var resp = BridgesAPI.removeChannel(id, channel);
-    resp.then((value) {
-      if (value.statusCode != 404) {
-        callback(false);
-      }
-    });
+  Future<Bridge> create(
+      {required List<String> type, String? bridgeId, String? name}) async {
+    // List<String> types = [];
+    // if (type != null) types = type.split(',');
+
+    var resp = await BridgesAPI.create(name, id, type);
+    //resp.then((value) {
+    print(resp.resp);
+    //var bridgesJson = json.decode(value.resp);
+    //brg = Bridge.fromJson(bridgesJson);
+    var bridgesJson = json.decode(resp.resp);
+    return Bridge.fromJson(bridgesJson);
+    //if (resp.statusCode == 200) {
+    //var bridgesJson = json.decode(value.resp);
+    //brg = Bridge.fromJson(bridgesJson);
+    //callback(false, this);
+    //} else {
+    // callback(true, brg!);
+    //}
+    //});
+  }
+
+  Future<bool> removeChannel({required List<String> channel}) async {
+    var resp = await BridgesAPI.removeChannel(id, channel);
+    // resp.then((value) {
+    //   if (value.statusCode != 404) {
+    //     callback(false);
+    //   }
+    // });
+    return false;
   }
 
   destroy(Function(bool) callback) {
@@ -481,44 +491,46 @@ class Bridge extends Resource {
 }
 
 class Bridges {
-  list(Function(bool, List<Bridge>) callback) {
-    var resp = BridgesAPI.list();
+  Future<List<Bridge>> list() async {
+    var resp = await BridgesAPI.list();
 
-    resp.then((value) {
-      //print(value.resp);
-      List<Bridge> varBridges = [];
-      if (value.statusCode != 404) {
-        var bridgesJson = json.decode(value.resp);
-        //print("Bridges: ${value.resp.runtimeType}");
-        for (final e in bridgesJson) {
-          // Do something with the current element
-          //print(e);
-          Bridge brige = Bridge.fromJson(e);
-          varBridges.add(brige);
-        }
-        callback(false, varBridges);
-      } else {
-        callback(true, varBridges);
+    //resp.then((value) {
+    //print(value.resp);
+    List<Bridge> varBridges = [];
+    if (resp.statusCode != 404) {
+      var bridgesJson = json.decode(resp.resp);
+      //print("Bridges: ${value.resp.runtimeType}");
+      for (final e in bridgesJson) {
+        // Do something with the current element
+        //print(e);
+        Bridge brige = Bridge.fromJson(e);
+        // print(brige.bridge_type);
+        varBridges.add(brige);
       }
-    });
+      //print("Bridges: ${varBridges.length}");
+      //callback(false, varBridges);
+    } else {
+      //callback(true, varBridges);
+    }
+    //});
+    return varBridges;
   }
 
-  create(Function(bool, Bridge) callback,
-      {String? type, String? bridgeId, String? name}) {
+  Future<Bridge> create({String? type, String? bridgeId, String? name}) async {
     List<String> types = [];
     if (type != null) types = type.split(',');
 
-    var resp = BridgesAPI.create(name, bridgeId, types);
-    resp.then((value) {
-      //print(value.stringData);
-      Bridge brg;
-      if (value.statusCode != 404) {
-        var bridgesJson = json.decode(value.resp);
-        brg = Bridge.fromJson(bridgesJson);
-        callback(false, brg);
-      } else {
-        //callback(true);
-      }
-    });
+    var resp = await BridgesAPI.create(name, bridgeId, types);
+    //resp.then((value) {
+    //print(resp.resp);
+    //Bridge brg;
+    //if (resp.statusCode != 404) {
+    var bridgesJson = json.decode(resp.resp);
+    Bridge brg = Bridge.fromJson(bridgesJson);
+    //} else {
+    //callback(true);
+    //}
+    //});
+    return brg;
   }
 }

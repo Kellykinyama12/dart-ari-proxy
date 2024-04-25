@@ -1134,16 +1134,16 @@ class Channel extends Resource {
 
 //final void Function(Error) callback;
 
-  void answer(Function(bool) callback) {
-    var resp = ChannelsApi.answer(id);
-    resp.then((value) {
-      print("Status code: ${value.statusCode}");
-      bool err = value.statusCode == 404 ||
-          value.statusCode == 409 ||
-          value.statusCode == 412;
+  Future<bool> answer() async {
+    var resp = await ChannelsApi.answer(id);
+    //resp.then((value) {
+    print("Status code: ${resp.statusCode}");
+    bool err = resp.statusCode == 404 ||
+        resp.statusCode == 409 ||
+        resp.statusCode == 412;
 
-      callback.call(err); // Example usage
-    });
+    return err;
+    //});
   }
 
   // @override
@@ -1211,8 +1211,9 @@ class Channel extends Resource {
         );
   }
 
-  hangup(Function(bool) callback) {
-    ChannelsApi.hangup(id);
+  Future<bool> hangup(Function(bool) callback) async {
+    var resp = await ChannelsApi.hangup(id);
+    return true;
   }
 
   // {

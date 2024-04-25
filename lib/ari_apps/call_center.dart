@@ -49,6 +49,7 @@ stasisStart(StasisStart event, Channel channel) {
 
       print('Channel ${channel.name} has entered our application');
 
+      //originate(channel);
       getOrCreateHoldingBridge(channel);
     });
 
@@ -78,7 +79,7 @@ stasisStart(StasisStart event, Channel channel) {
   // }
 }
 
-void getOrCreateHoldingBridge(Channel channel) {
+void getOrCreateHoldingBridge(Channel channel) async {
   // client.bridges.list((err: Error, bridges: Bridge[]) {
   //     let mixingBridges = bridges.filter((candidate: Bridge) => {
   //         return candidate['bridge_type'] === 'mixing';
@@ -92,41 +93,59 @@ void getOrCreateHoldingBridge(Channel channel) {
   //     });
   // });
 
-  client.bridges.list((err, bridges) {
-    var holdingBridge = bridges.firstWhere((Bridge candidate) {
+  var bridges = client.bridges.list();
+  bridges.then((bridgesList) {
+    print("Bridges: ${bridgesList.length}");
+    var holdingBridge = bridgesList.where((Bridge candidate) {
       return candidate.bridge_type == 'holding';
-    });
+    }).toList();
+    print(holdingBridge.length);
 
-    if (holdingBridge != null) {
-      print('Using existing holding bridge ${holdingBridge.id}');
+    if (holdingBridge.isNotEmpty) {
+      print('Using existing holding bridge ${holdingBridge[0].id}');
 
-      originate(channel, holdingBridge);
+      originate(channel, holdingBridge[0]);
     } else {
-      client.bridges.create((err, holdingBridge) {
-        if (err) {
-          throw err;
-        }
+      var bridge = client.bridges.create(type: "holding"); // {
 
-        print('Created new holding bridge ${holdingBridge.id}');
+      bridge.then((bridge) {
+        print('Created new holding bridge ${bridge.id}');
 
-        originate(channel, holdingBridge);
-      }, type: "holding");
+        originate(channel, bridge);
+      });
     }
   });
+
+  // client.bridges.list((err, bridges) {
+  //   var holdingBridge = bridges.firstWhere((Bridge candidate) {
+  //     return candidate.bridge_type == 'holding';
+  //   });
+
+  //   if (holdingBridge != null) {
+  //     print('Using existing holding bridge ${holdingBridge.id}');
+
+  //     originate(channel, holdingBridge);
+  //   } else {
+  //     client.bridges.create((err, holdingBridge) {
+  //       if (err) {
+  //         throw err;
+  //       }
+
+  //       print('Created new holding bridge ${holdingBridge.id}');
+
+  //       originate(channel, holdingBridge);
+  //     }, type: "holding");
+  //   }
+  // });
 }
 
 void originate(Channel channel, Bridge holdingBridge) async {
   bool callSucceed = false;
 
-  holdingBridge.addChannel((err) {
-    if (err) {
-      throw err;
-    }
-
-    holdingBridge.startMoh((err) {
-      // ignore error
-    });
-  }, channels: [channel.id]);
+  var err = holdingBridge.addChannel(channels: [channel.id]);
+  err.then((value) {
+    var error = holdingBridge.startMoh();
+  });
   //var endpoint = "SIP/7000/2035";
 
   var dialed = await client.channel(endpoint: endpoint);
@@ -277,7 +296,7 @@ void originate(Channel channel, Bridge holdingBridge) async {
     //CallsInConversation.set(channel.id, channel.id);
     //sendCdr();
 
-    joinMixingBridge(channel, dialed, holdingBridge, mixingBridge);
+    joinMixingBridge(channel, dialed, mixingBridge, holdingBridge);
     // addChannelsToExistingBridge(externalChannel, mixingBridge);
     addChannelsToExistingBridge(externalChannel, mixingBridge);
   });
@@ -335,11 +354,13 @@ void originate(Channel channel, Bridge holdingBridge) async {
 void joinExistingMixingBridge(Channel channel, Bridge mixingBridge) {}
 
 void addChannelsToExistingBridge(Channel externalChannel, Bridge mixingBridge) {
-  mixingBridge.addChannel((err) {
+  var error = mixingBridge.addChannel(channels: [externalChannel.id]);
+
+  error.then((err) {
     if (err) {
       throw err;
     }
-  }, channels: [externalChannel.id]);
+  });
 }
 
 void joinMixingBridge(Channel channel, Channel dialed, Bridge holdingBridge,
@@ -355,15 +376,13 @@ void joinMixingBridge(Channel channel, Channel dialed, Bridge holdingBridge,
     }
   });
 
-  mixingBridge.create((err, mixingBridge) {
-    if (err) {
-      throw err;
-    }
+  //var bridge = mixingBridge.create();
 
-    print('Created mixing bridge ${mixingBridge.id}');
+  //bridge.then((value) {
+  //print('Created mixing bridge ${value.id}');
 
-    moveToMixingBridge(channel, dialed, mixingBridge, holdingBridge);
-  });
+  moveToMixingBridge(channel, dialed, mixingBridge, holdingBridge);
+  //});
 }
 
 void moveToMixingBridge(Channel channel, Channel dialed, Bridge mixingBridge,
@@ -371,17 +390,16 @@ void moveToMixingBridge(Channel channel, Channel dialed, Bridge mixingBridge,
   print(
       'Adding channel ${channel.name} and dialed channel ${dialed.name} to bridge ${mixingBridge.id}');
 
-  holdingBridge.removeChannel((err) {
-    if (err) {
-      throw err;
-    }
+  var error1 = holdingBridge.removeChannel(channel: [channel.id]);
+  error1.then((value) {
+    var error = mixingBridge.addChannel(channels: [channel.id, dialed.id]);
 
-    mixingBridge.addChannel((err) {
+    error.then((err) {
       if (err) {
         throw err;
       }
-    }, channels: [channel.id, dialed.id]);
-  }, channel: [channel.id]);
+    });
+  });
 }
 
 dialedExit(Channel dialed, Bridge mixingBridge) {
