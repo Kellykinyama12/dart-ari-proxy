@@ -29,7 +29,7 @@ Future<int> rtpPort(String filename) async {
   var uri = Uri(
       scheme: "http",
       userInfo: "",
-      host: "10.100.54.137",
+      host: recorderIp,
       port: 8080,
       //path: "ari/channels/$channelId/answer",
       //Iterable<String>? pathSegments,
