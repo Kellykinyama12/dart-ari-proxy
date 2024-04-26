@@ -12,7 +12,7 @@ import '../ari_client/events/stasis_start.dart';
 import 'package:dart_ari_proxy/globals.dart';
 
 Ari client = Ari();
-var endpoint = "SIP/7000/2035";
+var endpoint = "SIP/7000/3636";
 
 Map<String, Cdr> cdrRecords = {};
 Map<String, CallRecording> voiceRecords = {};
