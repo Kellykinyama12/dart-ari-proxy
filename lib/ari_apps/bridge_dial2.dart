@@ -17,7 +17,7 @@ var endpoint = "SIP/7000/2035";
 Map<String, Cdr> cdrRecords = {};
 Map<String, CallRecording> voiceRecords = {};
 
-String recorderIp = "";
+String recorderIp = "10.43.0.55";
 int recorderPort = 0;
 
 HttpClient httpRtpClient = HttpClient();
@@ -279,7 +279,7 @@ void safeHangup(Channel channel) {
 
 void bridge_dial2(List<String> args) async {
   var env = DotEnv(includePlatformEnvironment: true)..load();
-  recorderIp = env['HTTP_SERVER_ADDRESS']!;
+  //recorderIp = env['HTTP_SERVER_ADDRESS']!;
   recorderPort = int.parse(env['HTTP_SERVER_PORT']!);
   endpoint = env['PHONE_ENDPOINT']!;
   WebSocket ws = await client.connect();
