@@ -333,8 +333,11 @@ class ChannelsApi {
     return (statusCode: response.statusCode, resp: stringData);
   }
 
-  static Future<HttpClientResponse> continueInDialplan(
-      String channelId, dynamic queryParams, qParams) async {
+  static Future<dynamic> continueInDialplan(String channelId,
+      {String? context,
+      String? extension,
+      num? priority,
+      String? label}) async {
     // params: {
     //     'endpoint':,
     //     'extension':,
@@ -352,14 +355,33 @@ class ChannelsApi {
     //   },
     //   data: { variables },
 
-    var uri = Uri.http(baseUrl, '/channels/${channelId}/continue', qParams);
+    var uri = Uri(
+        scheme: "http",
+        userInfo: "",
+        host: "10.44.0.55",
+        port: 8088,
+        path: "ari/channels/${channelId}/continue",
+        //Iterable<String>? pathSegments,
+        query: "",
+        queryParameters: {
+          'api_key': 'asterisk:asterisk',
+          'context': context ?? "",
+          'extension': extension ?? "",
+          'priority': priority != null ? priority.toString() : "",
+          'label': label ?? "",
+        }
+        //String? fragment
+        );
+
+    //var uri = Uri.http(baseUrl, '/channels/${channelId}/continue', qParams);
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
     print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
-    return response;
+    // return response;
+    return (statusCode: response.statusCode, resp: stringData);
   }
 
   static Future<HttpClientResponse> redirect(
@@ -1175,8 +1197,14 @@ class Channel extends Resource {
 
   removeAllListeners(String event) {}
 
-  continueInDialplan(Function(dynamic event) callback,
-      {String? context, String? extension, num? priority, String? label}) {}
+  Future<void> continueInDialplan(
+      {String? context,
+      String? extension,
+      num? priority,
+      String? label}) async {
+    ChannelsApi.continueInDialplan(id,
+        context: context, extension: extension, priority: priority);
+  }
 
   originate(Function(bool, Channel) callback,
       {required String endpoint, //: string;

@@ -142,6 +142,7 @@ void originate(Channel channel) async {
   // err.then((value) {
   //   var error = holdingBridge.startMoh();
   // });
+  bool succeeded = false;
 
   Bridge mixingBridge = await client.bridge(type: ['mixing']);
   Uuid uid = Uuid();
@@ -168,7 +169,13 @@ void originate(Channel channel) async {
 
   dialed.on('ChannelDestroyed', (event, dialed) {
     print('Dialed ${dialed.id} destroyed');
-    safeHangup(channel);
+    //safeHangup(channel);
+    if (succeeded) {
+      channel.continueInDialplan(
+          context: 'call-rating', priority: 1, extension: 's');
+    } else {
+      channel.continueInDialplan(context: 'IVR-15', priority: 1);
+    }
   });
 
   dialed.on('StasisStart', (event, dialedChannel) {
@@ -213,6 +220,8 @@ void originate(Channel channel) async {
     if (event.channel.state == 'Up') {
       //CallsInConversation.set(channel.id, channel.id);
       print('Dialed status to: ${event.channel.state}');
+
+      succeeded = true;
 
       voiceRecords[channel.id] = CallRecording(
           file_name: filename,
