@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../ari_client.dart';
 import '../ari_client/BridgesApi.dart';
 import '../ari_client/cdr.dart';
+import '../ari_client/dashboard_client.dart';
 import '../ari_client/events/stasis_start.dart';
 
 import 'package:dart_ari_proxy/globals.dart';
@@ -292,6 +293,11 @@ void bridge_dial2(List<String> args) async {
   recorderPort = int.parse(env['HTTP_SERVER_PORT']!);
   endpoint = env['PHONE_ENDPOINT']!;
   WebSocket ws = await client.connect();
+
+  String voice_records = env['DASHBOARD_RECORDER_ENDPOINT']!;
+  String cdr_records = env['DASHBOARD_CDR_ENDPOINT']!;
+
+  dsbClient = DasboardClient(Uri.parse(voice_records), Uri.parse(cdr_records));
 
   client.on("StasisStart", (event, incoming) {
     //print(event);
