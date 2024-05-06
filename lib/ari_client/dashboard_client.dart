@@ -30,7 +30,7 @@ class DasboardClient {
         //userInfo: cdr_records.userInfo,
         host: '10.43.0.55',
         port: 80,
-        path: 'api/cdr/cdr/',
+        path: 'api/cdr/cdr',
         //Iterable<String>? pathSegments,
         //query: cdr_records.query,
         queryParameters: params
