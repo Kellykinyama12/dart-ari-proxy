@@ -1,4 +1,4 @@
-# Dart-ari-proxy: Recorder for Asterisk pbx
+# Dart-ari-proxy: Asterisk Rest Interface in Dart
 
 # ari-Dart-examples
 
