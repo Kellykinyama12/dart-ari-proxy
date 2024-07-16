@@ -5,6 +5,7 @@ import 'package:dart_ari_proxy/ari_client/BridgesApi.dart';
 import 'package:dart_ari_proxy/ari_client/ChannelsApi.dart';
 //import 'package:dart_ari_proxy/ari_client/events/event.dart';
 import 'package:dart_ari_proxy/ari_client/events/stasis_start.dart';
+import 'package:dart_ari_proxy/globals.dart';
 import 'package:uuid/uuid.dart';
 
 //import 'ari_client/ChannelsApi.dart';
@@ -251,7 +252,7 @@ class Ari {
         //Iterable<String>? pathSegments,
         query: "",
         queryParameters: {
-          'api_key': 'asterisk:asterisk',
+          'api_key': api_key,
           'app': 'hello',
           'subscribe_all': 'true'
         }

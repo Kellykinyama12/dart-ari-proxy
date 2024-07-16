@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:dart_ari_proxy/ari_client/ChannelsApi.dart';
 import 'package:dart_ari_proxy/ari_client/resource.dart';
+import 'package:dart_ari_proxy/globals.dart';
 
 import 'models.dart';
 
@@ -28,7 +29,7 @@ class BridgesAPI {
         host: "10.44.0.55",
         port: 8088,
         path: "ari/bridges",
-        queryParameters: {'api_key': 'asterisk:asterisk'}
+        queryParameters: {'api_key': api_key}
         //String? fragment
         );
 
@@ -57,7 +58,7 @@ class BridgesAPI {
         port: 8088,
         path: path,
         queryParameters: {
-          'api_key': 'asterisk:asterisk',
+          'api_key': api_key,
           'bridgeId': bridgeId,
           'type': type != null ? type.join(',') : ""
         }
@@ -86,7 +87,7 @@ class BridgesAPI {
         path: bridgeId != null ? "ari/bridges/$bridgeId" : "ari/bridges",
         // path: "ari/bridges${bridgeId!=null?bridgeId: ""}",
         queryParameters: {
-          'api_key': 'asterisk:asterisk',
+          'api_key': api_key,
           'bridgeId': bridgeId,
           'type': type != null ? type.join(',') : ""
         }
@@ -139,7 +140,7 @@ class BridgesAPI {
         host: "10.44.0.55",
         port: 8088,
         path: "ari/bridges/${bridgeId}",
-        queryParameters: {'api_key': 'asterisk:asterisk'}
+        queryParameters: {'api_key': api_key}
         //String? fragment
         );
 
@@ -170,10 +171,7 @@ class BridgesAPI {
         host: "10.44.0.55",
         port: 8088,
         path: "ari/bridges/${bridgeId}/addChannel",
-        queryParameters: {
-          'api_key': 'asterisk:asterisk',
-          'channel': channels.join(',')
-        }
+        queryParameters: {'api_key': api_key, 'channel': channels.join(',')}
         //String? fragment
         );
 
@@ -204,10 +202,7 @@ class BridgesAPI {
         host: "10.44.0.55",
         port: 8088,
         path: "ari/bridges/${bridgeId}/removeChannel",
-        queryParameters: {
-          'api_key': 'asterisk:asterisk',
-          'channel': channels.join(',')
-        }
+        queryParameters: {'api_key': api_key, 'channel': channels.join(',')}
         //String? fragment
         );
     //var uri =
@@ -238,7 +233,7 @@ class BridgesAPI {
         port: 8088,
         path: "ari/bridges/${bridgeId}/moh",
         //String? fragment
-        queryParameters: {'api_key': 'asterisk:asterisk'});
+        queryParameters: {'api_key': api_key});
 
     //var uri = Uri.http(baseUrl, '/bridges/${bridgeId}/moh', queryParams);
 

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 
 import 'package:dart_ari_proxy/ari_client/resource.dart';
+import 'package:dart_ari_proxy/globals.dart';
 
 import 'models.dart';
 
@@ -28,7 +29,7 @@ class PlaybackApi {
         path: "ari/playbacks/$playbackId",
         //Iterable<String>? pathSegments,
         query: "",
-        queryParameters: {'api_key': 'asterisk:asterisk'}
+        queryParameters: {'api_key': api_key}
         //String? fragment
         );
 

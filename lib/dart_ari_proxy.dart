@@ -38,9 +38,9 @@ class wsSipServer {
     });
     HttpClient client = HttpClient();
 
-   // client.authenticate = (uri, scheme, realm) {
+    // client.authenticate = (uri, scheme, realm) {
 //   client.addCredentials(
-//       uri, "10.44.0.55", HttpClientBasicCredentials('api_key', 'asterisk:asterisk'));
+//       uri, "10.44.0.55", HttpClientBasicCredentials('api_key', api_key));
 
 // };
 
@@ -76,7 +76,7 @@ class wsSipServer {
           //         path: request.uri.toString(),
           //         //Iterable<String>? pathSegments,
           //         query: "",
-          //         queryParameters: {'api_key': 'asterisk:asterisk'}
+          //         queryParameters: {'api_key': api_key}
           //         //String? fragment
           //         );
 

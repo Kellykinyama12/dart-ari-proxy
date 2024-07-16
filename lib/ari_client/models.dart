@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:convert';
 
+import 'package:dart_ari_proxy/globals.dart';
+
 String username = "asterisk";
 String password = "asterisk";
 
@@ -14,7 +16,7 @@ dynamic baseUrl = //
   path: "ari",
   //Iterable<String>? pathSegments,
   query: "",
-  queryParameters: {'api_key': 'asterisk:asterisk'}
+  queryParameters: {'api_key': api_key}
   //String? fragment
 );
 HttpClient client = HttpClient();

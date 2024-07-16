@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:dart_ari_proxy/globals.dart';
+
 import 'models.dart';
 
 import 'ApplicationsApi.dart';
@@ -100,7 +102,7 @@ class ARI {
         //Iterable<String>? pathSegments,
         query: "",
         queryParameters: {
-          'api_key': 'asterisk:asterisk',
+          'api_key': api_key,
           'app': 'hello',
           'subscribe_all': 'true'
         }

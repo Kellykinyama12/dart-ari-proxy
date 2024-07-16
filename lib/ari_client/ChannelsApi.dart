@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:dart_ari_proxy/ari_client/PlaybackApi.dart';
 import 'package:dart_ari_proxy/ari_client/resource.dart';
+import 'package:dart_ari_proxy/globals.dart';
 
 //import 'events/event.dart';
 import 'events/stasis_start.dart';
@@ -32,7 +33,7 @@ class ChannelsApi {
         path: "ari/channels",
         //Iterable<String>? pathSegments,
         query: "",
-        queryParameters: {'api_key': 'asterisk:asterisk'}
+        queryParameters: {'api_key': api_key}
         //String? fragment
         );
     //var uri = Uri.http(baseUrl);
@@ -83,7 +84,7 @@ class ChannelsApi {
         //Iterable<String>? pathSegments,
         query: "",
         queryParameters: {
-          'api_key': 'asterisk:asterisk',
+          'api_key': api_key,
           'endpoint': endpoint ?? "",
           'extension': extension ?? "",
           'context': context ?? "",
@@ -126,7 +127,7 @@ class ChannelsApi {
       dynamic variables}) async {
     // var uri = Uri.http(baseUrl, '/channels/create', query: "",
     //     queryParameters: {
-    //   'api_key': 'asterisk:asterisk',
+    //   'api_key': api_key,
     //   'endpoint': queryParams.endpoint,
     //   'extension': queryParams.extension,
     //   'context': queryParams.context,
@@ -150,7 +151,7 @@ class ChannelsApi {
         //Iterable<String>? pathSegments,
         query: "",
         queryParameters: {
-          'api_key': 'asterisk:asterisk',
+          'api_key': api_key,
           'endpoint': endpoint ?? "",
           'extension': extension ?? "",
           'context': context ?? "",
@@ -190,7 +191,7 @@ class ChannelsApi {
       String? originator}) async {
     // var uri = Uri.http(baseUrl, '/channels/create', query: "",
     //     queryParameters: {
-    //   'api_key': 'asterisk:asterisk',
+    //   'api_key': api_key,
     //   'endpoint': queryParams.endpoint,
     //   'extension': queryParams.extension,
     //   'context': queryParams.context,
@@ -214,7 +215,7 @@ class ChannelsApi {
         //Iterable<String>? pathSegments,
         query: "",
         queryParameters: {
-          'api_key': 'asterisk:asterisk',
+          'api_key': api_key,
           'endpoint': endpoint ?? "",
           'extension': extension ?? "",
           'context': context ?? "",
@@ -320,7 +321,7 @@ class ChannelsApi {
         path: "ari/channels/${channelId}",
         //Iterable<String>? pathSegments,
         query: "",
-        queryParameters: {'api_key': 'asterisk:asterisk'}
+        queryParameters: {'api_key': api_key}
         //String? fragment
         );
     //var uri = Uri.http(baseUrl, '/channels/${channelId}');
@@ -364,7 +365,7 @@ class ChannelsApi {
         //Iterable<String>? pathSegments,
         query: "",
         queryParameters: {
-          'api_key': 'asterisk:asterisk',
+          'api_key': api_key,
           'context': context ?? "",
           'extension': extension ?? "",
           'priority': priority != null ? priority.toString() : "",
@@ -424,7 +425,7 @@ class ChannelsApi {
         path: "ari/channels/$channelId/answer",
         //Iterable<String>? pathSegments,
         query: "",
-        queryParameters: {'api_key': 'asterisk:asterisk'}
+        queryParameters: {'api_key': api_key}
         //String? fragment
         );
 
@@ -801,7 +802,7 @@ class ChannelsApi {
         //Iterable<String>? pathSegments,
         query: "",
         queryParameters: {
-          'api_key': 'asterisk:asterisk',
+          'api_key': api_key,
           'media': media.join(","),
           'lang': "en",
           'offsetms': '0',
@@ -850,7 +851,7 @@ class ChannelsApi {
         //Iterable<String>? pathSegments,
         query: "",
         queryParameters: {
-          'api_key': 'asterisk:asterisk',
+          'api_key': api_key,
           'media': media.join(","),
           'lang': "en",
           'offsetms': '0',
@@ -924,7 +925,7 @@ class ChannelsApi {
         path: "ari/channels/${channelId}/variable",
         //Iterable<String>? pathSegments,
         query: "",
-        queryParameters: {'api_key': 'asterisk:asterisk', 'variable': variable}
+        queryParameters: {'api_key': api_key, 'variable': variable}
         //String? fragment
         );
 
@@ -1033,7 +1034,7 @@ class ChannelsApi {
       //Iterable<String>? pathSegments,
       query: "",
       queryParameters: {
-        'api_key': 'asterisk:asterisk',
+        'api_key': api_key,
         'app': app,
         'variables': jsonEncode(variables),
         'external_host': external_host,
@@ -1082,7 +1083,7 @@ class ChannelsApi {
       path: "ari/channels/externalMedia/$channelId",
       //Iterable<String>? pathSegments,
       query: "",
-      queryParameters: {'api_key': 'asterisk:asterisk'},
+      queryParameters: {'api_key': api_key},
       //String? fragment
     );
     HttpClientRequest request = await client.deleteUrl(uri);
