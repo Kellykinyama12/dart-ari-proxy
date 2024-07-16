@@ -1054,6 +1054,46 @@ class ChannelsApi {
     return (statusCode: response.statusCode, resp: stringData);
   }
 
+  static Future<dynamic> externalMediaDelete(String channelId) async {
+    // params: {
+    //     'endpoint':,
+    //     'extension':,
+    //     'context':,
+    //     'priority':,
+    //     'label':,
+    //     'app':,
+    //     'appArgs':,
+    //     'callerId':,
+    //     'timeout':,
+    //     'channelId':,
+    //     'otherChannelId':,
+    //     'originator':,
+    //     'formats': [].concat(formats).join(","),
+    //   },
+    //   data: { variables },
+    //POST /channels/externalMedia?app=MyApp&external_host=127.0.0.1%3A60000&format=ulaw
+    //print(variables);
+
+    var uri = Uri(
+      scheme: "http",
+      userInfo: "",
+      host: "10.44.0.55",
+      port: 8088,
+      path: "ari/channels/externalMedia/$channelId",
+      //Iterable<String>? pathSegments,
+      query: "",
+      queryParameters: {'api_key': 'asterisk:asterisk'},
+      //String? fragment
+    );
+    HttpClientRequest request = await client.deleteUrl(uri);
+    HttpClientResponse response = await request.close();
+    print(response);
+    final String stringData = await response.transform(utf8.decoder).join();
+    print(response.statusCode);
+    //print(stringData);
+    return (statusCode: response.statusCode, resp: stringData);
+  }
+
   static Future<HttpClientResponse> dial(
       String channelId, String sid, dynamic queryParams, qParams) async {
     // params: {

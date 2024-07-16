@@ -1,7 +1,7 @@
 name: dart_ari_proxy
-description: A sample command-line application.
+description: Asterisk Rest Interface in Dart
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/kellykinyama12/dart-ari-proxy
 
 environment:
   sdk: ^3.0.5

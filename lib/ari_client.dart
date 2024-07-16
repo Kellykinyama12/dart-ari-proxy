@@ -376,6 +376,47 @@ class Ari {
     // });
   }
 
+  // Future<Channel> externalMediaDelete(String channelId) async {
+  //   var resp = await ChannelsApi.externalMediaDelete( channelId);
+
+  //   //print(resp.resp);
+
+  //   var channelJson = resp.resp;
+
+  //   Channel channel = Channel.fromJson(jsonDecode(channelJson));
+
+  //   statisChannels[channel.id] = channel;
+  //   return channel;
+
+  //   // resp.then((value) {
+  //   //   if (value.statusCode == 200 || value.statusCode == 204)
+  //   //     callback(false, this);
+  //   //   else
+  //   //     callback(true, this);
+  //   // });
+  // }
+  Future<dynamic> externalMediaDelete(String channelId) async {
+    // var resp = await ChannelsApi.externalMediaDelete( channelId);
+
+    await ChannelsApi.externalMediaDelete(channelId);
+
+    //print(resp.resp);
+
+    // var channelJson = resp.resp;
+
+    // Channel channel = Channel.fromJson(jsonDecode(channelJson));
+
+    // statisChannels[channel.id] = channel;
+    // return channel;
+
+    // resp.then((value) {
+    //   if (value.statusCode == 200 || value.statusCode == 204)
+    //     callback(false, this);
+    //   else
+    //     callback(true, this);
+    // });
+  }
+
   Future<Bridge> bridge(
       {String? name, String? bridgeId, List<String>? type}) async {
     var resp = await BridgesAPI.createOrUpdate(
