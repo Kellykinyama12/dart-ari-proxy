@@ -179,6 +179,18 @@ void originate(Channel channel) async {
     client.externalMediaDelete(externalChannel.id);
 
     if (succeeded) {
+      ChannelDestroyed ed = event.eventData as ChannelDestroyed;
+      //Channel ch = event.sender as Channel;
+
+      if (dsbClient != null) {
+        if (voiceRecords[channel.id] != null) {
+          voiceRecords[channel.id]!.duration_number = ed.timestamp.toString();
+          // print("Sending recording details to the dashboar");
+          dsbClient!.send_call_records(voiceRecords[channel.id]!);
+          voiceRecords.remove(channel.id);
+        }
+      }
+
       channel.continueInDialplan(
           context: 'call-rating', priority: 1, extension: 's');
     } else {
