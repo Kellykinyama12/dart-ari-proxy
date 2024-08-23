@@ -100,10 +100,10 @@ class Playback extends Resource {
 
   Map<String, Function(dynamic event, Playback playback)> handlers = {};
 
-  void on(String event, Function(dynamic event, Playback playback) callback) {
-    //print("Adding channel event handler for $event");
-    handlers[event] = callback;
-  }
+  // void on(String event, Function(dynamic event, Playback playback) callback) {
+  //   //print("Adding channel event handler for $event");
+  //   handlers[event] = callback;
+  // }
 
   /**
      * Get a playbacks details.

@@ -1,6 +1,7 @@
 import 'dart:io';
-import 'dart:convert';
+//import 'dart:convert';
 import 'package:dart_ari_proxy/globals.dart';
+import 'package:eventify/eventify.dart';
 
 import 'models.dart';
 
@@ -13,7 +14,7 @@ import 'RecordingsApi.dart';
 import 'SoundsApi.dart';
 import 'ChannelsApi.dart';
 
-class ARI {
+class ARI extends EventEmitter {
   /**
    * Creates a new awry API instance, providing clients for all available
    * Asterisk ARI endpoints.

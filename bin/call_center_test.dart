@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:dart_ari_proxy/ari_client.dart';
 import 'package:dart_ari_proxy/ari_client/events/stasis_start.dart';
-import 'package:dart_ari_proxy/dart_ari_proxy.dart';
-import 'package:dotenv/dotenv.dart';
-import 'package:test/test.dart';
+// import 'package:dart_ari_proxy/dart_ari_proxy.dart';
+// import 'package:dotenv/dotenv.dart';
+// import 'package:test/test.dart';
 
 Ari client = Ari();
 
@@ -43,6 +43,14 @@ stasisStart(StasisStart event, Channel channel) {
   // }
 }
 
+void safeHangup(Channel channel) {
+  print('Hanging up channel ${channel.name}');
+
+  channel.hangup((err) {
+    // ignore error
+  });
+}
+
 void originate(Channel channel) async {
   // var err = holdingBridge.addChannel(channels: [channel.id]);
   // err.then((value) {
@@ -50,7 +58,7 @@ void originate(Channel channel) async {
   // });
   bool succeeded = false;
 
-  var dialed = await client.channel(endpoint: "SIP/7000/3636");
+  var dialed = await client.channel(endpoint: "SIP/7000/1016");
   // var externalChannel = await client.channel(
   //     app: 'hello',
   //     endpoint: endpoint,
@@ -58,6 +66,8 @@ void originate(Channel channel) async {
 
   dialed.on('ChannelDestroyed', (event, dialed) {
     print('Dialed ${dialed.id} destroyed');
+
+    safeHangup(channel);
   });
 
   dialed.on('StasisStart', (event, dialedChannel) {
@@ -95,7 +105,7 @@ void originate(Channel channel) async {
     }
   },
       // endpoint: next_agent.number,
-      endpoint: "SIP/7000/3636",
+      endpoint: "SIP/7000/1016",
       app: 'hello',
       appArgs: ['dialed'],
       callerId: channel.caller.number);
@@ -115,8 +125,13 @@ void call_center_bridge(List<String> args) async {
 
   client.on("StasisStart", (event, incoming) {
     //print(event);
-    stasisStart(event, incoming);
+    //stasisStart(event, incoming);
   });
+
+  // client.on("StasisEnd", (event, incoming) {
+  //   print(event);
+  //   //stasisStart(event, incoming);
+  // });
 
   ws.listen((event) {
     var e = json.decode(event);

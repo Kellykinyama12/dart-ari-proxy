@@ -13,7 +13,7 @@ import '../ari_client/events/stasis_start.dart';
 import 'package:dart_ari_proxy/globals.dart';
 
 Ari client = Ari();
-var endpoint = "SIP/7000/3636";
+var endpoint = "SIP/7000/1016";
 
 Map<String, Cdr> cdrRecords = {};
 Map<String, CallRecording> voiceRecords = {};
@@ -139,9 +139,12 @@ void originate(Channel channel) async {
       }
     }
 
-    if (voiceRecords[channel.id] != null && dsbClient != null) {
-      voiceRecords[channel.id]!.duration_number = event.timestamp.toString();
-      dsbClient!.send_call_records(voiceRecords[channel.id]!);
+    if (dsbClient != null) {
+      if (voiceRecords[channel.id] != null) {
+        voiceRecords[channel.id]!.duration_number = event.timestamp.toString();
+        dsbClient!.send_call_records(voiceRecords[channel.id]!);
+        voiceRecords.remove(channel.id);
+      }
     }
     voiceRecords.remove(channel.id);
     cdrRecords.remove(channel.id);

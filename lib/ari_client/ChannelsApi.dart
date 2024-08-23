@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 
 import 'package:dart_ari_proxy/ari_client/PlaybackApi.dart';
+import 'package:dart_ari_proxy/ari_client/events/stasis_end.dart';
 import 'package:dart_ari_proxy/ari_client/resource.dart';
 import 'package:dart_ari_proxy/globals.dart';
 
@@ -23,7 +24,7 @@ class ChannelsApi {
    */
   ChannelsApi() {}
 
-  static Future<HttpClientResponse> list() async {
+  static Future<dynamic> list() async {
     // baseUrl.path = baseUrl.path + '/channels';
     var uri = Uri(
         scheme: "http",
@@ -41,9 +42,9 @@ class ChannelsApi {
     HttpClientResponse response = await request.close();
     //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
-    return response;
+    return (statusCode: response.statusCode, resp: stringData);
   }
 
   static Future<dynamic> originate(
@@ -104,9 +105,9 @@ class ChannelsApi {
     //dsvar uri = Uri.http(baseUrl, '/channels', qParams);
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return (statusCode: response.statusCode, resp: stringData);
   }
@@ -169,9 +170,9 @@ class ChannelsApi {
 
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return (statusCode: response.statusCode, resp: stringData);
   }
@@ -232,9 +233,9 @@ class ChannelsApi {
 
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return (statusCode: response.statusCode, resp: stringData);
   }
@@ -260,9 +261,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}');
     HttpClientRequest request = await client.getUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -289,9 +290,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}', qParams);
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -327,9 +328,9 @@ class ChannelsApi {
     //var uri = Uri.http(baseUrl, '/channels/${channelId}');
     HttpClientRequest request = await client.deleteUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return (statusCode: response.statusCode, resp: stringData);
   }
@@ -377,7 +378,7 @@ class ChannelsApi {
     //var uri = Uri.http(baseUrl, '/channels/${channelId}/continue', qParams);
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
     //print(response.statusCode);
     //print(stringData);
@@ -407,9 +408,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}/redirect', qParams);
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -435,7 +436,7 @@ class ChannelsApi {
     HttpClientResponse response = await request.close();
     //print(response);
     //final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    // print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -462,9 +463,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}/ring', qParams);
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -491,9 +492,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}/ring', qParams);
     HttpClientRequest request = await client.deleteUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -520,9 +521,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}/dtmf', qParams);
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -549,9 +550,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}/mute', qParams);
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -578,9 +579,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}/mute', qParams);
     HttpClientRequest request = await client.deleteUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -607,9 +608,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}/hold', qParams);
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -636,9 +637,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}/hold', qParams);
     HttpClientRequest request = await client.deleteUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -665,9 +666,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}/moh', qParams);
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -694,9 +695,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}/moh', qParams);
     HttpClientRequest request = await client.deleteUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -723,9 +724,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}/silence', qParams);
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -752,9 +753,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}/silence', qParams);
     HttpClientRequest request = await client.deleteUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -817,7 +818,7 @@ class ChannelsApi {
     HttpClientResponse response = await request.close();
     //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     //return response;
     return (statusCode: response.statusCode, resp: stringData);
@@ -862,9 +863,9 @@ class ChannelsApi {
 
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return (statusCode: response.statusCode, resp: stringData);
   }
@@ -891,9 +892,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}/record', qParams);
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -931,9 +932,9 @@ class ChannelsApi {
 
     HttpClientRequest request = await client.getUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return (statusCode: response.statusCode, resp: stringData);
   }
@@ -960,9 +961,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}/variable', qParams);
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -989,9 +990,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}/snoop/${sid}', qParams);
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -1023,7 +1024,7 @@ class ChannelsApi {
     //   },
     //   data: { variables },
     //POST /channels/externalMedia?app=MyApp&external_host=127.0.0.1%3A60000&format=ulaw
-    print(variables);
+    //print(variables);
 
     var uri = Uri(
       scheme: "http",
@@ -1048,14 +1049,14 @@ class ChannelsApi {
     );
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
-    //print(stringData);
+    //print(response.statusCode);
+    //print("External media channel: $stringData");
     return (statusCode: response.statusCode, resp: stringData);
   }
 
-  static Future<dynamic> externalMediaDelete(String channelId) async {
+  static Future<dynamic> externalMediaDelete(String id) async {
     // params: {
     //     'endpoint':,
     //     'extension':,
@@ -1080,20 +1081,69 @@ class ChannelsApi {
       userInfo: "",
       host: "10.44.0.55",
       port: 8088,
-      path: "ari/channels/externalMedia/$channelId",
+      path: "ari/channels/externalMedia/$id",
       //Iterable<String>? pathSegments,
-      query: "",
-      queryParameters: {'api_key': api_key},
+      // query: "",
+      // queryParameters: {
+      //   'api_key': api_key,
+      //   'app': app,
+      //   'variables': jsonEncode(variables),
+      //   'external_host': external_host,
+      //   'encapsulation': encapsulation,
+      //   'transport': transport,
+      //   'connection_type': connection_type,
+      //   'format': format,
+      //   'direction': direction
+      // },
       //String? fragment
     );
     HttpClientRequest request = await client.deleteUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return (statusCode: response.statusCode, resp: stringData);
   }
+  // static Future<dynamic> externalMediaDelete(String channelId) async {
+  //   // params: {
+  //   //     'endpoint':,
+  //   //     'extension':,
+  //   //     'context':,
+  //   //     'priority':,
+  //   //     'label':,
+  //   //     'app':,
+  //   //     'appArgs':,
+  //   //     'callerId':,
+  //   //     'timeout':,
+  //   //     'channelId':,
+  //   //     'otherChannelId':,
+  //   //     'originator':,
+  //   //     'formats': [].concat(formats).join(","),
+  //   //   },
+  //   //   data: { variables },
+  //   //POST /channels/externalMedia?app=MyApp&external_host=127.0.0.1%3A60000&format=ulaw
+  //   //print(variables);
+
+  //   var uri = Uri(
+  //     scheme: "http",
+  //     userInfo: "",
+  //     host: "10.44.0.55",
+  //     port: 8088,
+  //     path: "ari/channels/externalMedia/$channelId",
+  //     //Iterable<String>? pathSegments,
+  //     query: "",
+  //     queryParameters: {'api_key': api_key},
+  //     //String? fragment
+  //   );
+  //   HttpClientRequest request = await client.deleteUrl(uri);
+  //   HttpClientResponse response = await request.close();
+  //   print(response);
+  //   final String stringData = await response.transform(utf8.decoder).join();
+  //   print(response.statusCode);
+  //   //print(stringData);
+  //   return (statusCode: response.statusCode, resp: stringData);
+  // }
 
   static Future<HttpClientResponse> dial(
       String channelId, String sid, dynamic queryParams, qParams) async {
@@ -1117,9 +1167,9 @@ class ChannelsApi {
     var uri = Uri.http(baseUrl, '/channels/${channelId}/dial', qParams);
     HttpClientRequest request = await client.postUrl(uri);
     HttpClientResponse response = await request.close();
-    print(response);
+    //print(response);
     final String stringData = await response.transform(utf8.decoder).join();
-    print(response.statusCode);
+    //print(response.statusCode);
     //print(stringData);
     return response;
   }
@@ -1216,25 +1266,43 @@ class Channel extends Resource {
 
   Map<String, Function(dynamic event, Channel channel)> handlers = {};
 
-  void on(String event, Function(dynamic event, Channel channel) callback) {
-    //print("Adding channel event handler for $event");
-    handlers[event] = callback;
-  }
+  // void on(String event, Function(dynamic event, Channel channel) callback) {
+  //   //print("Adding channel event handler for $event");
+  //   handlers[event] = callback;
+  // }
 
-  void emit(data) {
-    //print(data);
+  // void emit(data) {
+  //   //print(data);
 
-    if (handlers[data['type']] != null) {
-      switch (data['type']) {
-        case "StasisStart":
-          print("Executing channel event ${data['type']}");
-          Channel channel = Channel.fromJson(data['channel']);
-          StasisStart stasisStart = StasisStart.fromJson(data);
-          handlers[data['type']]!(stasisStart, channel);
-      }
-      //handlers[data['type']]!(data);
-    }
-  }
+  //   if (handlers[data['type']] != null) {
+  //     switch (data['type']) {
+  //       case "StasisStart":
+  //         {
+  //           print("Executing channel event ${data['type']}");
+  //           Channel channel = Channel.fromJson(data['channel']);
+  //           StasisStart stasisStart = StasisStart.fromJson(data);
+  //           handlers[data['type']]!(stasisStart, channel);
+  //         }
+
+  //       case "StasisEnd":
+  //         {
+  //           print("Executing channel event ${data['type']}");
+  //           Channel channel = Channel.fromJson(data['channel']);
+  //           StasisEnd stasisEnd = StasisEnd.fromJson(data);
+  //           handlers[data['type']]!(stasisEnd, channel);
+  //         }
+  //       default:
+  //         {
+  //           print("unhandled channel event: ${data['type']}");
+  //         }
+  //     }
+  //     //handlers[data['type']]!(data);
+  //   } else {
+  //     {
+  //       print("unhandled channel event: ${data['type']}");
+  //     }
+  //   }
+  // }
 
   removeAllListeners(String event) {}
 
@@ -1350,9 +1418,9 @@ class Channel extends Resource {
   //   // });
   // }
 
-  removeListener(String event, Function(dynamic, Channel) callback) {
-    callback(false, this);
-  }
+  // removeListener(String event, Function(dynamic, Channel) callback) {
+  //   callback(false, this);
+  // }
 
   getChannelVar(Function(bool, dynamic) callback, String variable) {
     var resp = ChannelsApi.getChannelVariable(id, variable);

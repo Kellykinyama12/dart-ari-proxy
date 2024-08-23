@@ -6,6 +6,7 @@ import 'package:dart_ari_proxy/ari_client/ChannelsApi.dart';
 //import 'package:dart_ari_proxy/ari_client/events/event.dart';
 import 'package:dart_ari_proxy/ari_client/events/stasis_start.dart';
 import 'package:dart_ari_proxy/globals.dart';
+import 'package:eventify/eventify.dart';
 import 'package:uuid/uuid.dart';
 
 //import 'ari_client/ChannelsApi.dart';
@@ -20,201 +21,239 @@ import 'ari_client/events/stasis_end.dart';
 export 'ari_client/ChannelsApi.dart';
 export 'ari_client/events/event.dart';
 
-class Ari {
+class Ari extends EventEmitter {
   Map<String, Function(dynamic event, Channel channel)> handlers = {};
 
   Map<String, Channel> statisChannels = {};
+  Map<String, Channel> incomingChannels = {};
+  Map<String, Channel> dialedChannels = {};
   Map<String, Playback> statisPlaybacks = {};
 
-  void on(String event, Function(dynamic event, Channel channel) callback) {
-    handlers[event] = callback;
-  }
+  // void on(String event, Function(dynamic event, Channel channel) callback) {
+  //   handlers[event] = callback;
+  // }
 
-  void emit(data) {
-    //print(data);
+  // void emit(data) {
+  //   //print(data);
 
-    switch (data['type']) {
-      case "StasisStart":
-        Channel channel;
+  //   switch (data['type']) {
+  //     case "StasisStart":
+  //       Channel channel;
 
-        // if (data['channel']['name'].contains('UnicastRTP')) {
-        //   // print('Channel ${channel.name} has entered our application');
-        //   // print(channel.handlers);
-        //   // dialed = true;
-        //   if (statisChannels[data['channel']['id']] == null) {
-        //     throw "Channel should be in stasis channels";
-        //   } else {
-        //     print("Channel already in stsais Channels");
-        //     if (statisChannels[data['channel']['id']]!.handlers.isEmpty) {
-        //       throw "channel event handlers should not be empty";
-        //     }
-        //   }
-        // }
-        StasisStart stasisStart = StasisStart.fromJson(data);
-        channel = Channel.fromJson(data['channel']);
-        if (statisChannels[data['channel']['id']] != null) {
-          // if (stasisStart.args.length > 0) {
-          //   throw "This channel should be in statisChannels";
-          // }
-          if (statisChannels[data['channel']['id']]!.handlers.isNotEmpty) {
-            channel.handlers = statisChannels[data['channel']['id']]!.handlers;
-            statisChannels[data['channel']['id']] = channel;
-          }
-        } else {
-          statisChannels[data['channel']['id']] = channel;
-        }
-        if (handlers[data['type']] != null) {
-          handlers[data['type']]!(stasisStart, channel);
-        }
-        //print("Channel event handlers: ${channel.handlers}");
-        // if (channel.handlers.isEmpty) {
-        //   throw "Channel event handlers cannot be empty";
-        // }
+  //       // if (data['channel']['name'].contains('UnicastRTP')) {
+  //       //   // print('Channel ${channel.name} has entered our application');
+  //       //   // print(channel.handlers);
+  //       //   // dialed = true;
+  //       //   if (statisChannels[data['channel']['id']] == null) {
+  //       //     throw "Channel should be in stasis channels";
+  //       //   } else {
+  //       //     print("Channel already in stsais Channels");
+  //       //     if (statisChannels[data['channel']['id']]!.handlers.isEmpty) {
+  //       //       throw "channel event handlers should not be empty";
+  //       //     }
+  //       //   }
+  //       // }
+  //       StasisStart stasisStart = StasisStart.fromJson(data);
+  //       channel = stasisStart.channel;
+  //       if (statisChannels[channel.id] != null) {
+  //         // if (stasisStart.args.length > 0) {
+  //         //   throw "This channel should be in statisChannels";
+  //         // }
+  //         if (statisChannels[channel.id]!.handlers.isNotEmpty) {
+  //           channel.handlers = statisChannels[channel.id]!.handlers;
+  //           statisChannels[channel.id] = channel;
+  //         }
+  //       } else {
+  //         print("channel ${channel.id} is not in stasis app");
+  //         statisChannels[channel.id] = channel;
+  //       }
+  //       if (handlers[data['type']] != null) {
+  //         handlers[data['type']]!(stasisStart, channel);
+  //       }
+  //       //print("Channel event handlers: ${channel.handlers}");
+  //       // if (channel.handlers.isEmpty) {
+  //       //   throw "Channel event handlers cannot be empty";
+  //       // }
 
-        if (channel.handlers[data['type']] != null) {
-          //print("Event ${data['type']} fired from channel in stasis");
-          channel.handlers[data['type']]!(stasisStart, channel);
-        }
+  //       if (channel.handlers[data['type']] != null) {
+  //         //print("Event ${data['type']} fired from channel in stasis");
+  //         channel.handlers[data['type']]!(stasisStart, channel);
+  //       }
 
-      case 'StasisEnd':
-        Channel channel;
-        StasisEnd stasisEnd = StasisEnd.fromJson(data);
-        channel = Channel.fromJson(data['channel']);
-        if (statisChannels[data['channel']['id']] != null) {
-          // if (stasisStart.args.length > 0) {
-          //   throw "This channel should be in statisChannels";
-          // }
-          if (statisChannels[data['channel']['id']]!.handlers.isNotEmpty) {
-            channel.handlers = statisChannels[data['channel']['id']]!.handlers;
-            statisChannels[data['channel']['id']] = channel;
-          }
-        } else {
-          statisChannels[data['channel']['id']] = channel;
-        }
-        if (handlers[data['type']] != null) {
-          handlers[data['type']]!(stasisEnd, stasisEnd.channel);
-        }
-        if (channel.handlers[data['type']] != null) {
-          //print("Event ${data['type']} fired from channel in stasis");
-          channel.handlers[data['type']]!(stasisEnd, stasisEnd.channel);
-        }
+  //     case 'StasisEnd':
+  //       Channel channel;
+  //       StasisEnd stasisEnd = StasisEnd.fromJson(data);
+  //       channel = stasisEnd.channel;
 
-        statisChannels.remove(channel.id);
+  //       //bool dialed = channel.args.length > 0 ? stasisEnd.args[0] == 'dialed' : false;
 
-      case 'ChannelDestroyed':
-        ChannelDestroyed channelDestroyed = ChannelDestroyed.fromJson(data);
-        Channel channel = Channel.fromJson(data['channel']);
+  //       print("Channel is incoming? ${incomingChannels[channel.id]?.id}");
 
-        if (statisChannels[data['channel']['id']] != null) {
-          // if (stasisStart.args.length > 0) {
-          //   throw "This channel should be in statisChannels";
-          // }
-          if (statisChannels[data['channel']['id']]!.handlers.isNotEmpty) {
-            channel.handlers = statisChannels[data['channel']['id']]!.handlers;
-            statisChannels[data['channel']['id']] = channel;
-          }
-        } else {
-          statisChannels[data['channel']['id']] = channel;
-        }
-        if (handlers[data['type']] != null) {
-          //print(data['type']);
-          // Channel channel = Channel.fromJson(data['channel']);
-          // if (statisChannels[channel.id] == null) {
-          //   statisChannels[channel.id] = channel;
-          // }
+  //       if (incomingChannels[channel.id] != null) {
+  //         if (statisChannels[channel.id]!.handlers.isEmpty) {
+  //           throw "channel handlers for ${channel.id} cannot be null";
+  //         }
+  //       }
 
-          handlers[data['type']]!(channelDestroyed, channel);
-        }
-        if (statisChannels[data['channel']['id']] != null) {
-          //Channel channel = statisChannels[data['channel']['id']]!;
-          if (channel.handlers[data['type']] != null) {
-            //print("Event fired from existing channel");
-            channel.handlers[data['type']]!(channelDestroyed, channel);
-          }
-        }
-      case 'ChannelStateChange':
-        ChannelStateChange channelStateChange =
-            ChannelStateChange.fromJson(data);
-        Channel channel = Channel.fromJson(data['channel']);
+  //       // print(
+  //       //     "Channel handlers: ${statisChannels[channel.id]!.handlers.length}");
 
-        if (statisChannels[data['channel']['id']] != null) {
-          // if (stasisStart.args.length > 0) {
-          //   throw "This channel should be in statisChannels";
-          // }
-          if (statisChannels[data['channel']['id']]!.handlers.isNotEmpty) {
-            channel.handlers = statisChannels[data['channel']['id']]!.handlers;
-            statisChannels[data['channel']['id']] = channel;
-          }
-        } else {
-          statisChannels[data['channel']['id']] = channel;
-        }
-        if (handlers[data['type']] != null) {
-          handlers[data['type']]!(channelStateChange, channel);
-        }
-        if (statisChannels[data['channel']['id']] != null) {
-          if (channel.handlers[data['type']] != null) {
-            //print("Event fired from existing channel");
-            channel.handlers[data['type']]!(channelStateChange, channel);
-          }
-        }
+  //       if (statisChannels[channel.id] != null) {
+  //         // if (stasisStart.args.length > 0) {
+  //         //   throw "This channel should be in statisChannels";
+  //         // }
+  //         if (statisChannels[channel.id]!.handlers.isNotEmpty) {
+  //           channel.handlers = statisChannels[channel.id]!.handlers;
+  //           statisChannels[channel.id] = channel;
+  //           print(
+  //               "Channel handlers: ${statisChannels[channel.id]!.handlers.length}");
+  //         } else {
+  //           print("No Channel handlers for: ${statisChannels[channel.id]!.id}");
 
-      case 'ChannelDtmfReceived':
-        ChannelDtmfReceived channelDtmfReceived =
-            ChannelDtmfReceived.fromJson(data);
-        Channel channel = Channel.fromJson(data['channel']);
+  //           // if (incomingChannels[channel.id] != null) {
+  //           //   throw "channel handlers for ${channel.id} cannot be null";
+  //           // }
+  //         }
+  //       } else {
+  //         print("channel ${channel.id} is not in stasis app");
+  //         statisChannels[channel.id] = channel;
+  //       }
+  //       if (handlers[data['type']] != null) {
+  //         handlers[data['type']]!(stasisEnd, channel);
+  //       }
+  //       //print("Channel event handlers: ${channel.handlers}");
+  //       // if (channel.handlers.isEmpty) {
+  //       //   throw "Channel event handlers cannot be empty";
+  //       // }
 
-        if (statisChannels[data['channel']['id']] != null) {
-          // if (stasisStart.args.length > 0) {
-          //   throw "This channel should be in statisChannels";
-          // }
-          if (statisChannels[data['channel']['id']]!.handlers.isNotEmpty) {
-            channel.handlers = statisChannels[data['channel']['id']]!.handlers;
-            statisChannels[data['channel']['id']] = channel;
-          }
-        } else {
-          statisChannels[data['channel']['id']] = channel;
-        }
-        if (handlers[data['type']] != null) {
-          handlers[data['type']]!(channelDtmfReceived, channel);
-        }
-        if (statisChannels[data['channel']['id']] != null) {
-          if (channel.handlers[data['type']] != null) {
-            //print("Event fired from existing channel");
-            channel.handlers[data['type']]!(channelDtmfReceived, channel);
-          }
-        }
+  //       if (channel.handlers[data['type']] != null) {
+  //         //print("Event ${data['type']} fired from channel in stasis");
+  //         channel.handlers[data['type']]!(stasisEnd, channel);
+  //       }
 
-      case 'PlaybackFinished':
-        print(data);
-        PlaybackFinished playbackFinished = PlaybackFinished.fromJson(data);
-        Playback playback = Playback.fromJson(data['playback']);
-        print(statisPlaybacks[data['playback']['id']]);
+  //       //channel.emit(data);
 
-        if (statisPlaybacks[data['playback']['id']] != null) {
-          // if (stasisStart.args.length > 0) {
-          //   throw "This channel should be in statisChannels";
-          // }
+  //       statisChannels.remove(channel.id);
 
-          if (statisPlaybacks[data['playback']['id']]!.handlers.isNotEmpty) {
-            playback.handlers =
-                statisPlaybacks[data['playback']['id']]!.handlers;
-            statisPlaybacks[data['playback']['id']] = playback;
-          }
-        } else {
-          statisPlaybacks[data['playback']['id']] = playback;
-        }
-        // if (handlers[data['type']] != null) {
-        //   handlers[data['type']]!(playbackFinished, playback);
-        // }
-        if (statisPlaybacks[data['playback']['id']] != null) {
-          if (playback.handlers[data['type']] != null) {
-            //print("Event fired from existing channel");
-            playback.handlers[data['type']]!(playbackFinished, playback);
-          }
-        }
-      //handlers[data['type']]!(data);
-    }
-  }
+  //     case 'ChannelDestroyed':
+  //       ChannelDestroyed channelDestroyed = ChannelDestroyed.fromJson(data);
+  //       Channel channel = Channel.fromJson(data['channel']);
+
+  //       if (statisChannels[data['channel']['id']] != null) {
+  //         // if (stasisStart.args.length > 0) {
+  //         //   throw "This channel should be in statisChannels";
+  //         // }
+  //         if (statisChannels[data['channel']['id']]!.handlers.isNotEmpty) {
+  //           channel.handlers = statisChannels[data['channel']['id']]!.handlers;
+  //           statisChannels[data['channel']['id']] = channel;
+  //         }
+  //       } else {
+  //         statisChannels[data['channel']['id']] = channel;
+  //       }
+  //       if (handlers[data['type']] != null) {
+  //         //print(data['type']);
+  //         // Channel channel = Channel.fromJson(data['channel']);
+  //         // if (statisChannels[channel.id] == null) {
+  //         //   statisChannels[channel.id] = channel;
+  //         // }
+
+  //         handlers[data['type']]!(channelDestroyed, channel);
+  //       }
+  //       if (statisChannels[data['channel']['id']] != null) {
+  //         //Channel channel = statisChannels[data['channel']['id']]!;
+  //         if (channel.handlers[data['type']] != null) {
+  //           //print("Event fired from existing channel");
+  //           channel.handlers[data['type']]!(channelDestroyed, channel);
+  //         }
+  //       }
+  //     case 'ChannelStateChange':
+  //       ChannelStateChange channelStateChange =
+  //           ChannelStateChange.fromJson(data);
+  //       Channel channel = Channel.fromJson(data['channel']);
+
+  //       if (statisChannels[data['channel']['id']] != null) {
+  //         // if (stasisStart.args.length > 0) {
+  //         //   throw "This channel should be in statisChannels";
+  //         // }
+  //         if (statisChannels[data['channel']['id']]!.handlers.isNotEmpty) {
+  //           channel.handlers = statisChannels[data['channel']['id']]!.handlers;
+  //           statisChannels[data['channel']['id']] = channel;
+  //         }
+  //       } else {
+  //         statisChannels[data['channel']['id']] = channel;
+  //       }
+  //       if (handlers[data['type']] != null) {
+  //         handlers[data['type']]!(channelStateChange, channel);
+  //       }
+  //       if (statisChannels[data['channel']['id']] != null) {
+  //         if (channel.handlers[data['type']] != null) {
+  //           //print("Event fired from existing channel");
+  //           channel.handlers[data['type']]!(channelStateChange, channel);
+  //         }
+  //       }
+
+  //     case 'ChannelDtmfReceived':
+  //       ChannelDtmfReceived channelDtmfReceived =
+  //           ChannelDtmfReceived.fromJson(data);
+  //       Channel channel = Channel.fromJson(data['channel']);
+
+  //       if (statisChannels[data['channel']['id']] != null) {
+  //         // if (stasisStart.args.length > 0) {
+  //         //   throw "This channel should be in statisChannels";
+  //         // }
+  //         if (statisChannels[data['channel']['id']]!.handlers.isNotEmpty) {
+  //           channel.handlers = statisChannels[data['channel']['id']]!.handlers;
+  //           statisChannels[data['channel']['id']] = channel;
+  //         }
+  //       } else {
+  //         statisChannels[data['channel']['id']] = channel;
+  //       }
+  //       if (handlers[data['type']] != null) {
+  //         handlers[data['type']]!(channelDtmfReceived, channel);
+  //       }
+  //       if (statisChannels[data['channel']['id']] != null) {
+  //         if (channel.handlers[data['type']] != null) {
+  //           //print("Event fired from existing channel");
+  //           channel.handlers[data['type']]!(channelDtmfReceived, channel);
+  //         }
+  //       }
+
+  //     case 'PlaybackFinished':
+  //       print(data);
+  //       PlaybackFinished playbackFinished = PlaybackFinished.fromJson(data);
+  //       Playback playback = Playback.fromJson(data['playback']);
+  //       print(statisPlaybacks[data['playback']['id']]);
+
+  //       if (statisPlaybacks[data['playback']['id']] != null) {
+  //         // if (stasisStart.args.length > 0) {
+  //         //   throw "This channel should be in statisChannels";
+  //         // }
+
+  //         if (statisPlaybacks[data['playback']['id']]!.handlers.isNotEmpty) {
+  //           playback.handlers =
+  //               statisPlaybacks[data['playback']['id']]!.handlers;
+  //           statisPlaybacks[data['playback']['id']] = playback;
+  //         }
+  //       } else {
+  //         statisPlaybacks[data['playback']['id']] = playback;
+  //       }
+  //       // if (handlers[data['type']] != null) {
+  //       //   handlers[data['type']]!(playbackFinished, playback);
+  //       // }
+  //       if (statisPlaybacks[data['playback']['id']] != null) {
+  //         if (playback.handlers[data['type']] != null) {
+  //           //print("Event fired from existing channel");
+  //           playback.handlers[data['type']]!(playbackFinished, playback);
+  //         }
+  //       }
+  //     //handlers[data['type']]!(data);
+
+  //     default:
+  //       {
+  //         //print("Unhandled event: ${data['type']}");
+  //       }
+  //   }
+  // }
 
   Future<WebSocket> connect() async {
     // Random r = new Random();
@@ -376,6 +415,44 @@ class Ari {
     //     callback(true, this);
     // });
   }
+
+  // Future<Channel> externalMediaDelete(
+  //   Function(bool, Channel) callback, {
+  //   required String app, //: string;
+  //   dynamic variables, //?: Containers;
+  //   required external_host, //: string;
+  //   String? encapsulation, //?: string;
+  //   String? transport, //?: string;
+  //   String? connection_type, //?: string;
+  //   required String format, //: string;
+  //   String? direction, //?: string;
+  // }) async {
+  //   var resp = await ChannelsApi.externalMedia(
+  //       app: app,
+  //       variables: variables,
+  //       external_host: external_host,
+  //       encapsulation: encapsulation,
+  //       transport: transport,
+  //       connection_type: connection_type,
+  //       format: format,
+  //       direction: direction);
+
+  //   //print(resp.resp);
+
+  //   var channelJson = resp.resp;
+
+  //   Channel channel = Channel.fromJson(jsonDecode(channelJson));
+
+  //   statisChannels[channel.id] = channel;
+  //   return channel;
+
+  //   // resp.then((value) {
+  //   //   if (value.statusCode == 200 || value.statusCode == 204)
+  //   //     callback(false, this);
+  //   //   else
+  //   //     callback(true, this);
+  //   // });
+  //}
 
   // Future<Channel> externalMediaDelete(String channelId) async {
   //   var resp = await ChannelsApi.externalMediaDelete( channelId);
