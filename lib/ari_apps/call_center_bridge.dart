@@ -12,6 +12,7 @@ import 'package:dart_ari_proxy/ari_client/events/channel_dtmf_received.dart';
 import 'package:dart_ari_proxy/ari_client/events/channel_state_change.dart';
 import 'package:dart_ari_proxy/ari_client/events/playback_finished.dart';
 import 'package:dart_ari_proxy/ari_client/events/stasis_end.dart';
+import 'package:dart_ari_proxy/ari_client/misc.dart';
 import 'package:dotenv/dotenv.dart';
 import 'package:uuid/uuid.dart';
 
@@ -478,6 +479,10 @@ void call_center_bridge(List<String> args) async {
 
     // Function? func = app[e['type']];
     // func!.call(e);
+  }, onDone: () {
+    setTimeout(() {
+      call_center_bridge(args);
+    }, 5000);
   });
   print("Connected to asterisk...");
 }
