@@ -22,11 +22,11 @@ class StasisStart extends Event {
   Channel? replace_channel;
   dynamic json;
 
-  factory StasisStart.fromJson(dynamic json) {
-    Channel channel = Channel.fromJson(json['channel']);
+  factory StasisStart.fromJson(dynamic json, {Channel? channel}) {
+    Channel newChannel = Channel.fromJson(json['channel'], channel: channel);
     DateTime timestamp = DateTime.parse(json['timestamp']);
     return StasisStart(
-        json['args'] as dynamic, timestamp, channel, json as dynamic);
+        json['args'] as dynamic, timestamp, newChannel, json as dynamic);
   }
 
   // @override

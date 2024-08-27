@@ -10,10 +10,10 @@ class StasisEnd extends Event {
   Channel channel; //: Channel;
   dynamic json;
 
-  factory StasisEnd.fromJson(dynamic json) {
-    Channel channel = Channel.fromJson(json['channel']);
-
+  factory StasisEnd.fromJson(dynamic json, {Channel? channel}) {
+    Channel newChannel = Channel.fromJson(json['channel'], channel: channel);
     DateTime timestamp = DateTime.parse(json['timestamp']);
-    return StasisEnd(channel, timestamp, json as dynamic);
+
+    return StasisEnd(newChannel, timestamp, json as dynamic);
   }
 }

@@ -10,6 +10,7 @@ environment:
 dependencies:
   dotenv: ^4.2.0
   eventify: ^1.0.1
+  events_emitter: ^0.5.2
   redis: ^4.0.0
   uuid: ^4.3.3
   # path: ^1.8.0

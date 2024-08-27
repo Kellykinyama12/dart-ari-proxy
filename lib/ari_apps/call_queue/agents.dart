@@ -11,13 +11,14 @@ enum AgentState {
 
 class Agent {
   String? name; //?:string
-  String? endpoint;
-  String number; //:string
+  String endpoint;
+  String? number; //:string
   String? setNumber; //?:string
   AgentState state = AgentState.UNKNOWN;
+  AgentState status = AgentState.UNKNOWN;
   Statistics statistics = Statistics();
 
-  Agent(this.number);
+  Agent(this.endpoint);
 }
 
 class Statistics {
@@ -27,4 +28,5 @@ class Statistics {
   int agentTerminatedCalls = 0;
   int callerTerminatedCalls = 0;
   int dialedCalls = 0;
+  int unknownStateCallsTried = 0;
 }

@@ -6,7 +6,7 @@ import 'package:dart_ari_proxy/ari_client/ChannelsApi.dart';
 //import 'package:dart_ari_proxy/ari_client/events/event.dart';
 import 'package:dart_ari_proxy/ari_client/events/stasis_start.dart';
 import 'package:dart_ari_proxy/globals.dart';
-import 'package:eventify/eventify.dart';
+//import 'package:eventify/eventify.dart';
 import 'package:uuid/uuid.dart';
 
 //import 'ari_client/ChannelsApi.dart';
@@ -17,6 +17,7 @@ import 'ari_client/events/channel_dtmf_received.dart';
 import 'ari_client/events/channel_state_change.dart';
 import 'ari_client/events/playback_finished.dart';
 import 'ari_client/events/stasis_end.dart';
+import 'package:events_emitter/events_emitter.dart';
 
 export 'ari_client/ChannelsApi.dart';
 export 'ari_client/events/event.dart';
@@ -336,7 +337,7 @@ class Ari extends EventEmitter {
   Bridges bridges = Bridges(); //: Bridges;
 
   Future<Channel> channel(
-      {String? endpoint,
+      {required String endpoint,
       String? extension,
       String? context,
       String? priority,
@@ -475,6 +476,7 @@ class Ari extends EventEmitter {
   // }
   Future<dynamic> externalMediaDelete(String channelId) async {
     // var resp = await ChannelsApi.externalMediaDelete( channelId);
+    print('Channel ${channelId}, has exited our application');
 
     await ChannelsApi.externalMediaDelete(channelId);
 

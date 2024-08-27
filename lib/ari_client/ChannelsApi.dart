@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:convert';
 
 import 'package:dart_ari_proxy/ari_client/PlaybackApi.dart';
+import 'package:dart_ari_proxy/ari_client/events/channel_destroyed.dart';
+import 'package:dart_ari_proxy/ari_client/events/channel_state_change.dart';
 import 'package:dart_ari_proxy/ari_client/events/stasis_end.dart';
 import 'package:dart_ari_proxy/ari_client/resource.dart';
 import 'package:dart_ari_proxy/globals.dart';
@@ -1081,7 +1083,7 @@ class ChannelsApi {
       userInfo: "",
       host: "10.44.0.55",
       port: 8088,
-      path: "ari/channels/externalMedia/$id",
+      path: "ari/channels/$id",
       //Iterable<String>? pathSegments,
       // query: "",
       // queryParameters: {
@@ -1190,11 +1192,21 @@ class Channel extends Resource {
       this.creationtime,
       this.language,
       this.channelvars,
-      this.json) {}
+      this.json); // {}
   String id;
   String name;
   String state; //: string;
   CallerID caller; //: CallerID;
+
+  void stasisStart(StasisStart message) => emit('StasisStart', message);
+
+  void stasisEnd(StasisEnd message) => emit('StasisEnd', message);
+
+  void channelDestroyed(ChannelDestroyed message) =>
+      emit('channelDestroyed', message);
+
+  void channelStateChange(ChannelStateChange message) =>
+      emit('ChannelStateChange', message);
 
   /**
      * Connected.
@@ -1228,18 +1240,27 @@ class Channel extends Resource {
 
   dynamic json;
 
-  factory Channel.fromJson(dynamic json) {
+  factory Channel.fromJson(dynamic json, {Channel? channel}) {
     //print(json);
     final creationtime = DateTime.parse(json['creationtime']); // 8:18pm
     var caller = CallerID.fromJson(json['caller']);
+
+    if (channel != null) {
+      channel.state = json['state'];
+      channel.dialplan = json['dialplan'];
+      channel.channelvars = json['channelvars'];
+      channel.json = json;
+      return channel;
+    }
+
     return Channel(
         json['id'] as String,
         json['name'] as String,
         json['accountcode'] as String,
         json['state'] as String,
-        caller as CallerID,
+        caller,
         json['dialplan'] as dynamic,
-        creationtime as DateTime,
+        creationtime,
         json['language'] as String,
         json['channelvars'] as dynamic,
         json as dynamic);
@@ -1304,7 +1325,7 @@ class Channel extends Resource {
   //   }
   // }
 
-  removeAllListeners(String event) {}
+  //removeAllListeners(String event) {}
 
   Future<void> continueInDialplan(
       {String? context,

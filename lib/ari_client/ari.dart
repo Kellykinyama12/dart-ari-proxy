@@ -1,7 +1,12 @@
 import 'dart:io';
 //import 'dart:convert';
+import 'package:dart_ari_proxy/ari_client/events/channel_destroyed.dart';
+import 'package:dart_ari_proxy/ari_client/events/channel_state_change.dart';
+import 'package:dart_ari_proxy/ari_client/events/stasis_end.dart';
+import 'package:dart_ari_proxy/ari_client/events/stasis_start.dart';
 import 'package:dart_ari_proxy/globals.dart';
-import 'package:eventify/eventify.dart';
+//import 'package:eventify/eventify.dart';
+import 'package:events_emitter/events_emitter.dart';
 
 import 'models.dart';
 
@@ -66,6 +71,16 @@ class ARI extends EventEmitter {
   // String password;
   // String baseUrl;
   // HttpClient client = HttpClient();
+
+  void stasisStart(StasisStart message) => emit('StasisStart', message);
+
+  void stasisEnd(StasisEnd message) => emit('StasisEnd', message);
+
+  void channelDestroyed(ChannelDestroyed message) =>
+      emit('channelDestroyed', message);
+
+  void channelStateChange(ChannelStateChange message) =>
+      emit('ChannelStateChange', message);
 
   Future<WebSocket> connect() async {
     // Random r = new Random();

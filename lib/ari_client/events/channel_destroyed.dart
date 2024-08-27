@@ -23,11 +23,11 @@ class ChannelDestroyed extends Event {
 
   dynamic json;
 
-  factory ChannelDestroyed.fromJson(dynamic json) {
-    Channel channel = Channel.fromJson(json['channel']);
+  factory ChannelDestroyed.fromJson(dynamic json, {Channel? channel}) {
+    Channel newChannel = Channel.fromJson(json['channel'], channel: channel);
 
     DateTime timestamp = DateTime.parse(json['timestamp']);
     return ChannelDestroyed(json['cause'] as num, json['cause_txt'] as String,
-        channel, timestamp, json as dynamic);
+        newChannel, timestamp, json as dynamic);
   }
 }
