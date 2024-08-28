@@ -85,6 +85,8 @@ stasisStart(StasisStart event, Channel channel) async {
     //   channel.off();
     //   originate(channel);
     // }, 1000);
+    Playback playback = client.playback();
+    await channel.play(playback, media: ['sound:vm-dialout']);
 
     const oneSec = Duration(seconds: 3);
     Timer.periodic(oneSec, (Timer t) {
@@ -196,34 +198,6 @@ Future<void> originate(Channel incoming) async {
         voiceRecords.remove(incoming.id);
       }
     }
-
-    //incoming.off();
-    // if (succeededCalls[incoming.id]!) {
-    //   //   if (dsbClient != null) {
-    //   //     if (voiceRecords[channel.id] != null) {
-    //   //       voiceRecords[channel.id]!.duration_number =
-    //   //           channelDestroyedEvent.timestamp.toString();
-    //   //       // print("Sending recording details to the dashboar");
-    //   //       dsbClient!.send_call_records(voiceRecords[channel.id]!);
-    //   //       voiceRecords.remove(channel.id);
-    //   //     }
-    //   //   }
-
-    //   await incoming.continueInDialplan(
-    //       context: 'call-rating', priority: 1, extension: 's');
-
-    //   //   agent.status = AgentState.IDLE;
-    // } else {
-    //   //   print("Call failed");
-    //   //await incoming.hangup();
-    //   //await incoming.continueInDialplan(context: 'IVR-15', priority: 1);
-    //   // if (callTimers[incoming.id] == null) {
-    //   //   callTimers[incoming.id] = setTimeout(() async {
-    //   //     await originate(incoming);
-    //   //   }, 5000);
-    //   // }
-    // }
-    //incoming.off();
   });
 
   dialed.once('StasisStart', (event) async {
