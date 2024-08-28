@@ -1,9 +1,9 @@
 import 'dart:io';
 //import 'dart:convert';
-import 'package:dart_ari_proxy/ari_client/events/channel_destroyed.dart';
-import 'package:dart_ari_proxy/ari_client/events/channel_state_change.dart';
-import 'package:dart_ari_proxy/ari_client/events/stasis_end.dart';
-import 'package:dart_ari_proxy/ari_client/events/stasis_start.dart';
+//import 'package:dart_ari_proxy/ari_client/events/channel_destroyed.dart';
+//import 'package:dart_ari_proxy/ari_client/events/channel_state_change.dart';
+//import 'package:dart_ari_proxy/ari_client/events/stasis_end.dart';
+//import 'package:dart_ari_proxy/ari_client/events/stasis_start.dart';
 import 'package:dart_ari_proxy/globals.dart';
 //import 'package:eventify/eventify.dart';
 import 'package:events_emitter/events_emitter.dart';
@@ -72,15 +72,21 @@ class ARI extends EventEmitter {
   // String baseUrl;
   // HttpClient client = HttpClient();
 
-  void stasisStart(StasisStart message) => emit('StasisStart', message);
+  void stasisStart(stasisStart, channel) {
+    emit('StasisStart', (stasisStart, channel));
+  }
 
-  void stasisEnd(StasisEnd message) => emit('StasisEnd', message);
+  void stasisEnd(stasisEnd, channel) {
+    emit('StasisEnd', (stasisEnd, channel));
+  }
 
-  void channelDestroyed(ChannelDestroyed message) =>
-      emit('channelDestroyed', message);
+  void channelDestroyed(channelDestroyed, channel) {
+    emit('channelDestroyed', (channelDestroyed, channel));
+  }
 
-  void channelStateChange(ChannelStateChange message) =>
-      emit('ChannelStateChange', message);
+  void channelStateChange(channelStateChange, channel) {
+    emit('ChannelStateChange', (channelStateChange, channel));
+  }
 
   Future<WebSocket> connect() async {
     // Random r = new Random();

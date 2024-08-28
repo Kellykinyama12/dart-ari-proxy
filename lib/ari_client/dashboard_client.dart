@@ -85,10 +85,10 @@ class DasboardClient {
       HttpClientRequest request = await client.postUrl(uri);
 
       HttpClientResponse response = await request.close();
-      print(response);
+      //print(response);
       final String stringData = await response.transform(utf8.decoder).join();
       //print(response.statusCode);
-      //print(stringData);
+      print(stringData);
       return (statusCode: response.statusCode, resp: stringData);
     } catch (err) {
       print(err);

@@ -3,6 +3,7 @@ import 'package:dart_ari_proxy/ari_client.dart';
 
 class CallQueue {
   Map<String, Agent> agents = {};
+  Map<String, Agent> agentsLogged = {};
   late Ari ari_client;
 
   CallQueue(List<String> agent_nums) {
@@ -42,33 +43,51 @@ class CallQueue {
 
       //   //return;
       // }
-      else {
-        //Best agent is logged in
-        if (bestAgent!.state == AgentState.LOGGEDIN &&
-            agent.state == AgentState.UNKNOWN &&
-            agent.statistics.unknownStateCallsTried < 3 &&
-            agent.status != AgentState.ONCONVERSATION) {
-          print("Selecting alernative agent: ${agent.endpoint}");
-          bestAgent = agent;
-        } else if (bestAgent!.state == AgentState.LOGGEDIN &&
-            agent.state == AgentState.LOGGEDIN &&
-            agent.statistics.answereCalls <
-                bestAgent!.statistics.answereCalls &&
-            agent.status != AgentState.ONCONVERSATION) {
-          bestAgent = agent;
-        } else if (bestAgent!.state == AgentState.UNKNOWN &&
-            agent.state == AgentState.UNKNOWN &&
-            agent.statistics.unknownStateCallsTried <
-                bestAgent!.statistics.unknownStateCallsTried &&
-            agent.status != AgentState.ONCONVERSATION) {
-          bestAgent = agent;
-        } else if (bestAgent!.state == AgentState.LOGGEDIN &&
-            agent.state == AgentState.LOGGEDIN &&
-            agent.statistics.receivedCalls <
-                bestAgent!.statistics.receivedCalls &&
-            agent.status != AgentState.ONCONVERSATION) {
-          bestAgent = agent;
-        }
+      // else {
+      //   //Best agent is logged in
+      //   if (bestAgent!.state == AgentState.LOGGEDIN &&
+      //       agent.state == AgentState.UNKNOWN &&
+      //       agent.statistics.unknownStateCallsTried < 2 &&
+      //       agent.status != AgentState.ONCONVERSATION) {
+      //     print("Selecting alernative agent: ${agent.endpoint}");
+      //     bestAgent = agent;
+      //   } else if (bestAgent!.state == AgentState.LOGGEDIN &&
+      //       agent.state == AgentState.LOGGEDIN &&
+      //       agent.statistics.answereCalls <
+      //           bestAgent!.statistics.answereCalls &&
+      //       agent.status != AgentState.ONCONVERSATION) {
+      //     bestAgent = agent;
+      //   } else if (bestAgent!.state == AgentState.UNKNOWN &&
+      //       agent.state == AgentState.UNKNOWN &&
+      //       agent.statistics.unknownStateCallsTried <
+      //           bestAgent!.statistics.unknownStateCallsTried &&
+      //       agent.status != AgentState.ONCONVERSATION) {
+      //     bestAgent = agent;
+      //   } else if (bestAgent!.state == AgentState.LOGGEDIN &&
+      //       agent.state == AgentState.LOGGEDIN &&
+      //       agent.statistics.receivedCalls <
+      //           bestAgent!.statistics.receivedCalls &&
+      //       agent.status != AgentState.ONCONVERSATION) {
+      //     bestAgent = agent;
+      //   }
+
+      if (bestAgent!.state == AgentState.UNKNOWN &&
+          agent.state == AgentState.UNKNOWN &&
+          agent.statistics.unknownStateCallsTried <=
+              bestAgent!.statistics.unknownStateCallsTried) {
+        bestAgent = agent;
+      }
+
+      if (bestAgent!.state == AgentState.UNKNOWN &&
+          agent.state == AgentState.LOGGEDIN &&
+          agentsLogged.length < 10) {
+        bestAgent = agent;
+      }
+
+      if (bestAgent!.state == AgentState.LOGGEDIN &&
+          agent.state == AgentState.LOGGEDIN &&
+          agent.statistics.answereCalls < bestAgent!.statistics.answereCalls) {
+        bestAgent = agent;
       }
     });
 
@@ -140,7 +159,7 @@ List<String> agent_nums = [
   '8717',
   '8841',
   '8970',
-  '8969',
+  //'8969',
   '8833',
   '8727',
   '8704',

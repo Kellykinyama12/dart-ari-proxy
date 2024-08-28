@@ -474,14 +474,15 @@ class Bridge extends Resource {
     return false;
   }
 
-  destroy(Function(bool) callback) {
-    var resp = BridgesAPI.destroy(id);
-    resp.then((value) {
-      if (value.statusCode != 200 || value.statusCode != 204)
-        callback(false);
-      else
-        callback(true);
-    });
+  Future<void> destroy() async {
+    var resp = await BridgesAPI.destroy(id);
+    // resp.then((value) {
+    //   if (value.statusCode != 200 || value.statusCode != 204)
+    //     callback(false);
+    //   else
+    //     callback(true);
+    // });
+    //return;
   }
 }
 

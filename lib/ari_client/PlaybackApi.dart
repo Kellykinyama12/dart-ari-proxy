@@ -149,7 +149,7 @@ class Playback extends Resource {
     //Channel channel = Channel.fromJson(json['channel']);
     String? next_media_uri;
     if (json['next_media_uri'] != null) next_media_uri = json['next_media_uri'];
-    //print(json);
+    // print(json);
     return Playback(
         id: json['id'] as String,
         media_uri: json['media_uri'] as String,

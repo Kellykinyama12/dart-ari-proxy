@@ -30,6 +30,10 @@ class Ari extends EventEmitter {
   Map<String, Channel> dialedChannels = {};
   Map<String, Playback> statisPlaybacks = {};
 
+  void stasisStart(stasisStart, channel) {
+    emit('StasisStart', (stasisStart, channel));
+  }
+
   // void on(String event, Function(dynamic event, Channel channel) callback) {
   //   handlers[event] = callback;
   // }
@@ -476,7 +480,7 @@ class Ari extends EventEmitter {
   // }
   Future<dynamic> externalMediaDelete(String channelId) async {
     // var resp = await ChannelsApi.externalMediaDelete( channelId);
-    print('Channel ${channelId}, has exited our application');
+    //print('Channel ${channelId}, has exited our application');
 
     await ChannelsApi.externalMediaDelete(channelId);
 

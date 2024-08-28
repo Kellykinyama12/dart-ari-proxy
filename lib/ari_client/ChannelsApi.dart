@@ -1198,15 +1198,17 @@ class Channel extends Resource {
   String state; //: string;
   CallerID caller; //: CallerID;
 
-  void stasisStart(StasisStart message) => emit('StasisStart', message);
+  void stasisStart(stasisStart, channel) {
+    emit('StasisStart', (stasisStart, channel));
+  }
 
-  void stasisEnd(StasisEnd message) => emit('StasisEnd', message);
+  void stasisEnd(stasisEnd, channel) => emit('StasisEnd', (stasisEnd, channel));
 
-  void channelDestroyed(ChannelDestroyed message) =>
-      emit('channelDestroyed', message);
+  void channelDestroyed(channelDestroyed, channel) =>
+      emit('channelDestroyed', (channelDestroyed, channel));
 
-  void channelStateChange(ChannelStateChange message) =>
-      emit('ChannelStateChange', message);
+  void channelStateChange(channelStateChange, channel) =>
+      emit('ChannelStateChange', (channelStateChange, channel));
 
   /**
      * Connected.
@@ -1336,7 +1338,7 @@ class Channel extends Resource {
         context: context, extension: extension, priority: priority);
   }
 
-  originate(Function(bool, Channel) callback,
+  Future<void> originate(
       {required String endpoint, //: string;
       String? extension, //?: string;
       String? context, //?: string;
@@ -1350,8 +1352,8 @@ class Channel extends Resource {
       String? otherChannelId, //?: string;
       String? originator, //?: string;
       String? formats //?: string;
-      }) {
-    ChannelsApi.originate(
+      }) async {
+    await ChannelsApi.originate(
         endpoint: endpoint, //: string;
         extension: extension, //?: string;
         context: context, //?: string;
@@ -1369,7 +1371,7 @@ class Channel extends Resource {
         );
   }
 
-  Future<bool> hangup(Function(bool) callback) async {
+  Future<bool> hangup() async {
     var resp = await ChannelsApi.hangup(id);
     return true;
   }
@@ -1383,22 +1385,22 @@ class Channel extends Resource {
   //   String? playbackId,
   // }
 
-  play(
-    Playback play,
-    Function(bool, Playback) callback, {
+  Future<Playback> play(
+    Playback play, {
     required List<String> media,
     String? lang,
     num offsetms = 0,
     num skipms = 3000,
     String? playbackId,
-  }) {
-    var resp =
-        ChannelsApi.play(channelId: id, media: media, playbackId: play.id);
-    resp.then((playReturned) {
-      Playback playback = Playback.fromJson(jsonDecode(playReturned.resp));
+  }) async {
+    var resp = await ChannelsApi.play(
+        channelId: id, media: media, playbackId: play.id);
+    // resp.then((playReturned) {
+    //   Playback playback = Playback.fromJson(jsonDecode(playReturned.resp));
 
-      callback(false, playback);
-    });
+    //   callback(false, playback);
+    // });
+    return Playback.fromJson(jsonDecode(resp.resp));
   }
 
   // Future<Channel> externalMedia(

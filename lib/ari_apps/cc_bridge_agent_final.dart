@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
-//import 'package:dart_ari_proxy/ari_apps/app_ivr.dart';
+//import 'package:dart_ari_proxy/ari_apps/bridge_dial.dart';
 import 'package:dart_ari_proxy/ari_apps/call_queue/agents.dart';
 import 'package:dart_ari_proxy/ari_apps/call_queue/call_queue.dart';
+import 'package:dart_ari_proxy/ari_client.dart';
+import 'package:dart_ari_proxy/ari_client/BridgesApi.dart';
 import 'package:dart_ari_proxy/ari_client/PlaybackApi.dart';
 import 'package:dart_ari_proxy/ari_client/cdr.dart';
 import 'package:dart_ari_proxy/ari_client/dashboard_client.dart';
@@ -14,35 +15,15 @@ import 'package:dart_ari_proxy/ari_client/events/channel_dtmf_received.dart';
 import 'package:dart_ari_proxy/ari_client/events/channel_state_change.dart';
 import 'package:dart_ari_proxy/ari_client/events/playback_finished.dart';
 import 'package:dart_ari_proxy/ari_client/events/stasis_end.dart';
+import 'package:dart_ari_proxy/ari_client/events/stasis_start.dart';
 import 'package:dart_ari_proxy/ari_client/misc.dart';
+import 'package:dart_ari_proxy/globals.dart';
 import 'package:dotenv/dotenv.dart';
-//import 'package:eventify/eventify.dart';
 import 'package:uuid/uuid.dart';
 
-import '../ari_client.dart';
-import '../ari_client/BridgesApi.dart';
-import '../ari_client/events/stasis_start.dart';
-import '../globals.dart';
-
-//Steps to speak to operate a call queue
-// 1.
-
-Ari client = Ari();
-//var endpoint = "SIP/7000/1057";
-
 String recorderIp = "10.43.0.55";
-int recorderPort = 0;
-
 HttpClient httpRtpClient = HttpClient();
-
-// CallQueue callQueue = CallQueue(agent_nums);
-//CallQueue callQueue = CallQueue(['SIP/7000/1057', 'SIP/7000/3332']);
-//CallQueue callQueue = CallQueue(['SIP/7000/1016', 'SIP/7000/1057']);
-CallQueue callQueue = CallQueue(['SIP/7000/1057']);
-Map<String, CallRecording> voiceRecords = {};
-
-Map<String, Timer> callTimers = {};
-
+//import 'package:events_emitter/listener.dart';
 Future<int> rtpPort(String filename) async {
   // baseUrl.path = baseUrl.path + '/channels';
 
@@ -71,7 +52,19 @@ Future<int> rtpPort(String filename) async {
   return port['rtp_port'];
 }
 
-stasisStart(StasisStart event, Channel channel) {
+Ari client = Ari();
+CallQueue callQueue = CallQueue(agent_nums);
+//CallQueue callQueue = CallQueue(['SIP/7000/1057', 'SIP/7000/3332']);
+
+//8940/1020/
+//CallQueue callQueue = CallQueue(['SIP/7000/1016', 'SIP/7000/1057']);
+//CallQueue callQueue = CallQueue(['1057']);
+
+Map<String, CallRecording> voiceRecords = {};
+Map<String, bool> succeededCalls = {};
+Map<String, Timer> callTimers = {};
+
+stasisStart(StasisStart event, Channel channel) async {
   bool dialed = event.args.length > 0 ? event.args[0] == 'dialed' : false;
   //Channel channel = event.channel;
   if (channel.name.contains('UnicastRTP')) {
@@ -81,80 +74,63 @@ stasisStart(StasisStart event, Channel channel) {
 
   if (!dialed) {
     //throw variable;
-    var resp = channel.answer();
-    resp.then((err) async {
-      //print('Channel ${channel.name} has entered our application');
-      client.incomingChannels[channel.id] = channel;
-      var playback = client.playback();
-      //state.currentPlayback = playback;
-      bool error = false;
+    await channel.answer();
 
-      // channel.play(playback, (err, playback) {
-      //   // ignore errors
-      // }, media: ['sound:queue-callswaiting']);
+    succeededCalls[channel.id] = false;
 
-      originate(channel, playback);
+    //originate(channel);
+
+    // callTimers[channel.id] = setTimeout(() {
+    //   print("calling originate");
+    //   channel.off();
+    //   originate(channel);
+    // }, 1000);
+
+    const oneSec = Duration(seconds: 3);
+    Timer.periodic(oneSec, (Timer t) {
+      callTimers[channel.id] = t;
+      originate(channel);
     });
   } else {
-    if (event.args.length > 0 && event.args[0] == 'dialed') {
-      client.dialedChannels[channel.id] = channel;
-    }
+    if (event.args.length > 0 && event.args[0] == 'dialed') {}
   }
 }
 
-void addChannelsToExistingBridge(Channel externalChannel, Bridge mixingBridge) {
-  var error = mixingBridge.addChannel(channels: [externalChannel.id]);
+Future<void> originate(Channel incoming) async {
+  //const outgoing = client.Channel();
 
-  error.then((err) {
-    if (err) {
-      throw err;
-    }
-  });
-}
-
-void originate(Channel channel, Playback playback) async {
-  // if (callTimers[channel.id] != null) {
-  //   callTimers[channel.id]!.cancel();
-  // }
-  bool succeeded = false;
-
-  Bridge mixingBridge = await client.bridge(type: ['mixing']);
   Uuid uid = Uuid();
   String filename = uid.v1();
 
-  int rtpport = await rtpPort(filename);
-
   Agent? agent = callQueue.nextAgent();
 
+  print("Agent enpoint: ${agent!.endpoint}");
+  print("Agent state: ${agent!.state}");
+  print("");
+
   if (agent == null) {
-    channel.continueInDialplan(context: 'IVR-15', priority: 1);
+    incoming.continueInDialplan(context: 'IVR-15', priority: 1);
   }
-  String endpoint = agent!.endpoint;
+  String endpoint = "SIP/7000/${agent!.endpoint}";
 
-  if (agent.state == AgentState.UNKNOWN) {
-    // print(
-    //     "Uncreasing unknown agent state to: ${agent.statistics.unknownStateCallsTried}");
-    agent.statistics.unknownStateCallsTried++;
-  }
+  int rtpport = await rtpPort(filename);
+  var dialed = await client.channel(endpoint: endpoint);
 
-  var dialed = await client.channel(endpoint: agent.endpoint);
-
-  Channel? // = await client.externalMedia(
-
-      externalChannel = await client.externalMedia(
-    (err, externalChannel) {
-      if (err) throw err;
-    },
-    app: 'hello',
-    variables: {'CALLERID(name)': endpoint, 'recording': 'yes'},
-    external_host: '$recorderIp:$rtpport',
-    format: 'alaw',
-  );
-
-  dialed.on('StasisStart', (event) {
-    print('Dialed ${dialed.id} entered stasis application');
-
-    joinMixingBridge(channel, dialed, mixingBridge);
+  incoming.once('StasisEnd', (event) async {
+    var (stasisEndEvent, channel) = event as (StasisEnd, Channel);
+    //print('incoming.once StasisEnd event:${stasisEndEvent.type}');
+    //print('incoming.once StasisEnd channel: ${channel.id}');
+    // if (callTimers[incoming.id] != null) {
+    //   callTimers[incoming.id]!.cancel();
+    //   callTimers.remove(incoming.id);
+    // }
+    if (callTimers[incoming.id] != null) {
+      callTimers[incoming.id]!.cancel();
+      callTimers.remove(incoming.id);
+    }
+    callTimers.remove(incoming.id);
+    await dialed.hangup();
+    //incoming.off();
   });
 
   //dialedChannelStateChange =
@@ -164,147 +140,159 @@ void originate(Channel channel, Playback playback) async {
         event as (ChannelStateChange, Channel);
     //Channel ch = csc.channel as Channel;
     if (dialChannel.state == 'Up') {
-      succeeded = true;
-
       //print('Dialed status to: ${dialChannel.state}');
 
-      voiceRecords[channel.id] = CallRecording(
+      voiceRecords[incoming.id] = CallRecording(
           file_name: filename,
           file_path: filename,
           agent_number: endpoint,
-          phone_number: channel.caller.number);
+          phone_number: incoming.caller.number);
 
       //print("Initialised the recording: ${voiceRecords[channel.id]}");
 
       agent.statistics.answereCalls++;
       agent.status = AgentState.ONCONVERSATION;
       //playback.stop((callback) {});
-
-      addChannelsToExistingBridge(externalChannel, mixingBridge);
+      // if (callTimers[incoming.id] != null) {
+      //  callTimers[incoming.id]!.cancel();
+      print("Removing timer ...");
+      callTimers.remove(incoming.id);
+      succeededCalls[incoming.id] = true;
+      //}
     }
 
     if (dialChannel.state == 'Ringing') {
       // print('Dialed status to: ${dialChannel.state}');
       // print("Agent status changed to state: ${AgentState.LOGGEDIN}");
       agent.state = AgentState.LOGGEDIN;
+
+      callQueue.agentsLogged[agent.endpoint] = agent;
       agent.statistics.receivedCalls++;
+
+      if (callTimers[incoming.id] != null) {
+        callTimers[incoming.id]!.cancel();
+      }
     }
   });
 
-  channel.on('StasisEnd', (event) {
-    var (stasisEndEvent, incoming) = event as (StasisEnd, Channel);
+  dialed.once('ChannelDestroyed', (event) async {
+    var (channelDestroyedEvent, channel) = event as (ChannelDestroyed, Channel);
+    //print('outgoing.once ChannelDestroyed event:${channelDestroyedEvent.type}');
+    //print('outgoing.once ChannelDestroyed channel:${channel.id}');
 
-    //print('Channel ${incoming.name} has exited our application');
-    safeHangup(dialed);
+    //await incoming.hangup();
 
-    client.externalMediaDelete(externalChannel.id);
+    if (succeededCalls[incoming.id] == true) {
+      //print("Redirecting call");
+      await incoming.continueInDialplan(
+          context: 'call-rating', priority: 1, extension: 's');
 
-    if (dsbClient != null) {
-      if (voiceRecords[channel.id] != null) {
-        voiceRecords[channel.id]!.duration_number =
-            stasisEndEvent.timestamp.toString();
-        // print("Sending recording details to the dashboar");
-        dsbClient!.send_call_records(voiceRecords[channel.id]!);
-        voiceRecords.remove(channel.id);
+      //   //   if (dsbClient != null) {
+      if (voiceRecords[incoming.id] != null) {
+        voiceRecords[incoming.id]!.duration_number =
+            channelDestroyedEvent.timestamp.toString();
+        //print("Sending recording details to the dashboar");
+        dsbClient!.send_call_records(voiceRecords[incoming.id]!);
+        voiceRecords.remove(incoming.id);
       }
     }
 
-    dialed.off();
-    channel.off();
+    //incoming.off();
+    // if (succeededCalls[incoming.id]!) {
+    //   //   if (dsbClient != null) {
+    //   //     if (voiceRecords[channel.id] != null) {
+    //   //       voiceRecords[channel.id]!.duration_number =
+    //   //           channelDestroyedEvent.timestamp.toString();
+    //   //       // print("Sending recording details to the dashboar");
+    //   //       dsbClient!.send_call_records(voiceRecords[channel.id]!);
+    //   //       voiceRecords.remove(channel.id);
+    //   //     }
+    //   //   }
+
+    //   await incoming.continueInDialplan(
+    //       context: 'call-rating', priority: 1, extension: 's');
+
+    //   //   agent.status = AgentState.IDLE;
+    // } else {
+    //   //   print("Call failed");
+    //   //await incoming.hangup();
+    //   //await incoming.continueInDialplan(context: 'IVR-15', priority: 1);
+    //   // if (callTimers[incoming.id] == null) {
+    //   //   callTimers[incoming.id] = setTimeout(() async {
+    //   //     await originate(incoming);
+    //   //   }, 5000);
+    //   // }
+    // }
+    //incoming.off();
   });
 
-  //dialedChannelDestroyed =
-  dialed.on('ChannelDestroyed', (event) {
-    var (channelDestroyedEvent, dialedChannel) =
-        event as (ChannelDestroyed, Channel);
+  dialed.once('StasisStart', (event) async {
+    var (stasisStartEvent, channel) = event as (StasisStart, Channel);
+    //print('outgoing.once StasisStart event:${stasisStartEvent.type}');
+    //print('outgoing.once StasisStart outgoing:${channel.id}');
 
-    print('Channel ${dialedChannel.name} has been destroyed');
-    // if (externalChannel != null) {
-    //   client.externalMediaDelete(externalChannel!.id);
-    // }
+    //const bridge = client.Bridge();
+    ///Bridge mixingBridge = await client.bridge(type: ['mixing']);
+    Bridge mixingBridge = await client.bridge(type: ['mixing']);
 
-    if (succeeded) {
-      if (dsbClient != null) {
-        if (voiceRecords[channel.id] != null) {
-          voiceRecords[channel.id]!.duration_number =
-              channelDestroyedEvent.timestamp.toString();
-          // print("Sending recording details to the dashboar");
-          dsbClient!.send_call_records(voiceRecords[channel.id]!);
-          voiceRecords.remove(channel.id);
+    dialed.once('StasisEnd', (event) async {
+      var (stasisEndEvent, channel) = event as (StasisEnd, Channel);
+      //print('outgoing.once StasisEnd event:${stasisEndEvent.type}');
+      //print('outgoing.once StasisEnd channel:${channel.id}');
+      //outgoing.off();
+      if (succeededCalls[incoming.id] == true) {
+        //print("Redirecting call");
+        await incoming.continueInDialplan(
+            context: 'call-rating', priority: 1, extension: 's');
+
+        //   //   if (dsbClient != null) {
+        if (voiceRecords[incoming.id] != null) {
+          voiceRecords[incoming.id]!.duration_number =
+              stasisEndEvent.timestamp.toString();
+          //print("Sending recording details to the dashboar");
+          dsbClient!.send_call_records(voiceRecords[incoming.id]!);
+          voiceRecords.remove(incoming.id);
         }
       }
 
-      dialed.off();
-      channel.off();
+      await mixingBridge.destroy();
+    });
 
-      channel.continueInDialplan(
-          context: 'call-rating', priority: 1, extension: 's');
-
-      agent.status = AgentState.IDLE;
-    } else {
-      print("Call failed");
-      dialed.off();
-      channel.off();
-      channel.continueInDialplan(context: 'IVR-15', priority: 1);
-       callTimers[channel.id] = setTimeout(() {
-      //   dialed.off();
-      //   channel.off();
-
-      //   originate(channel, playback);
-      // }, 10000);
-    }
+    await dialed.answer();
+    Channel externalChannel = await client.externalMedia(
+      (err, externalChannel) {
+        if (err) throw err;
+      },
+      app: 'hello',
+      variables: {'CALLERID(name)': 'recording', 'recording': 'yes'},
+      external_host: '$recorderIp:$rtpport',
+      format: 'alaw',
+    );
+    // //final mixingBridge = await bridge.create(type: ['mixing']);
+    await mixingBridge
+        .addChannel(channels: [incoming.id, dialed.id, externalChannel.id]);
   });
 
-  dialed.originate((err, dialed) async {
-    if (err) {
-      //debug('originate error:', err);
-      throw err;
-    }
-  },
+  //Playback playback = client.playback();
+  //await incoming.play(playback, media: ['sound:vm-dialout']);
+
+  // Originate call from incoming channel to endpoint
+  // await outgoing.originate({
+  //     endpoint: ENDPOINT,
+  //     app: appName,
+  //     appArgs: 'dialed',
+  // });
+
+  if (agent.state == AgentState.UNKNOWN) {
+    agent.statistics.unknownStateCallsTried++;
+  }
+
+  await dialed.originate(
       // endpoint: next_agent.number,
       endpoint: endpoint,
       app: 'hello',
       appArgs: ['dialed'],
-      callerId: channel.caller.number);
-}
-
-void joinMixingBridge(Channel channel, Channel dialed, Bridge mixingBridge) {
-  dialed.on('StasisEnd', (event) {
-    dialedExit(channel, mixingBridge);
-  });
-
-  var resp = dialed.answer();
-  resp.then((value) {
-    moveToMixingBridge(channel, dialed, mixingBridge);
-  });
-}
-
-void moveToMixingBridge(Channel channel, Channel dialed, Bridge mixingBridge) {
-  // print(
-  //     'Adding channel ${channel.name} and dialed channel ${dialed.name} to bridge ${mixingBridge.id}');
-
-  mixingBridge.addChannel(channels: [channel.id, dialed.id]);
-}
-
-dialedExit(Channel dialed, Bridge mixingBridge) {
-  // print(
-  //     'Dialed channel ${dialed.name} has left our application, destroying mixing bridge ${mixingBridge.id}');
-
-  mixingBridge.destroy((err) {
-    if (err) {
-      throw err;
-    }
-
-    dialed.hangup((err) => {});
-  });
-}
-
-void safeHangup(Channel channel) {
-  //print('Hanging up channel ${channel.name}');
-
-  channel.hangup((err) {
-    // ignore error
-  });
+      callerId: incoming.caller.number);
 }
 
 void call_center_bridge(List<String> args) async {

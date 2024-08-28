@@ -35,7 +35,7 @@ int recorderPort = 0;
 
 HttpClient httpRtpClient = HttpClient();
 
-// CallQueue callQueue = CallQueue(agent_nums);
+ CallQueue callQueue = CallQueue(agent_nums);
 //CallQueue callQueue = CallQueue(['SIP/7000/1057', 'SIP/7000/3332']);
 CallQueue callQueue = CallQueue(['SIP/7000/1016', 'SIP/7000/1057']);
 Map<String, CallRecording> voiceRecords = {};
