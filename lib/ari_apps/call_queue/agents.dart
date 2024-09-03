@@ -34,6 +34,10 @@ class Agent {
         {
           state = AgentState.LOGGEDIN;
         }
+      default:
+        {
+          status = AgentState.UNKNOWN;
+        }
     }
 
     switch (data["status"]) {
@@ -44,6 +48,11 @@ class Agent {
       case "LOGGED_IN":
         {
           status = AgentState.LOGGEDIN;
+        }
+
+      default:
+        {
+          status = AgentState.UNKNOWN;
         }
     }
 

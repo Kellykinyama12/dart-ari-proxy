@@ -14,6 +14,7 @@
 import 'package:dart_ari_proxy/ari_apps/call_queue/call_queue.dart';
 import 'package:dart_ari_proxy/ari_apps/cc_bridge_agent_final.dart';
 import 'package:dart_ari_proxy/globals.dart';
+import 'package:dotenv/dotenv.dart';
 
 void main(List<String> arguments) async {
   //call_center_queue(arguments);
@@ -22,7 +23,13 @@ void main(List<String> arguments) async {
   //app_ivr_2(arguments);
   //bridge_dial(arguments);
   //bridge_dial2(arguments);
+  var env = DotEnv(includePlatformEnvironment: true)..load();
+  //recorderIp = env['HTTP_SERVER_ADDRESS']!;
+  //recorderPort = int.parse(env['HTTP_SERVER_PORT']!);
 
-  callQueue = CallQueue();
+  String voice_records = env['AGENTS_ENDPOINT']!;
+  //String cdr_records = env['DASHBOARD_CDR_ENDPOINT']!;
+
+  callQueue = CallQueue(Uri.parse(voice_records));
   call_center_bridge(arguments);
 }

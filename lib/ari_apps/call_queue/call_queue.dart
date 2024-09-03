@@ -6,23 +6,23 @@ import 'package:dart_ari_proxy/ari_client.dart';
 
 HttpClient httpRtpClient = HttpClient();
 
-Future<dynamic> agentsAPI() async {
+Future<dynamic> agentsAPI(Uri uri) async {
   // baseUrl.path = baseUrl.path + '/channels';
 
   //10.100.54.137
-  var uri = Uri(
-    scheme: "http",
-    userInfo: "",
-    // host: "zqa1.zesco.co.zm",
-    host: "localhost",
-    //port: 8080,
-    port: 8000,
-    path: "/api/agents",
-    //Iterable<String>? pathSegments,
-    //query: "",
-    //queryParameters: {'filename': filename}
-    //String? fragment
-  );
+  // var uri = Uri(
+  //   scheme: "http",
+  //   userInfo: "",
+  //   // host: "zqa1.zesco.co.zm",
+  //   host: "localhost",
+  //   //port: 8080,
+  //   port: 8000,
+  //   path: "/api/agents",
+  //   //Iterable<String>? pathSegments,
+  //   //query: "",
+  //   //queryParameters: {'filename': filename}
+  //   //String? fragment
+  // );
 
 //HttpClientRequest request = await client.getUrl(uri);
   //var uri = Uri.http(baseUrl, '/channels/${channelId}/answer', qParams);
@@ -43,7 +43,7 @@ class CallQueue {
   Map<String, Agent> agentsLogged = {};
   late Ari ari_client;
 
-  CallQueue({Map<String, Agent>? agent_numbs}) {
+  CallQueue(Uri uri, {Map<String, Agent>? agent_numbs}) {
     // agent_nums.forEach((numb) {
     //   agents[numb] = Agent(numb);
     // });
@@ -52,7 +52,7 @@ class CallQueue {
     //   var (resp, statusCode, err) = resp;
     // });
 
-    agentsAPI().then((value) {
+    agentsAPI(uri).then((value) {
       var (resp, statusCode, err) = value;
       // print(resp);
 
@@ -65,14 +65,14 @@ class CallQueue {
     });
   }
 
-  factory CallQueue.fromList(List<String> agent_nums) {
-    Map<String, Agent> agents = {};
-    agent_nums.forEach((numb) {
-      agents[numb] = Agent(numb);
-    });
+  // factory CallQueue.fromList(List<String> agent_nums) {
+  //   Map<String, Agent> agents = {};
+  //   agent_nums.forEach((numb) {
+  //     agents[numb] = Agent(numb);
+  //   });
 
-    return CallQueue(agent_numbs: agents);
-  }
+  //   return CallQueue(agent_numbs: agents);
+  // }
 
   fromAgentsAPI() {}
 

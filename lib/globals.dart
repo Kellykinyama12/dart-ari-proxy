@@ -9,4 +9,4 @@ DasboardClient? dsbClient;
 
 String api_key = 'asterisk:asterisk';
 
-CallQueue callQueue = CallQueue();
+late CallQueue callQueue;// = CallQueue();
