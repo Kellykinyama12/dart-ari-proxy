@@ -1,16 +1,80 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:dart_ari_proxy/ari_apps/call_queue/agents.dart';
 import 'package:dart_ari_proxy/ari_client.dart';
+
+HttpClient httpRtpClient = HttpClient();
+
+Future<dynamic> agentsAPI() async {
+  // baseUrl.path = baseUrl.path + '/channels';
+
+  //10.100.54.137
+  var uri = Uri(
+    scheme: "http",
+    userInfo: "",
+    // host: "zqa1.zesco.co.zm",
+    host: "localhost",
+    //port: 8080,
+    port: 8000,
+    path: "/api/agents",
+    //Iterable<String>? pathSegments,
+    //query: "",
+    //queryParameters: {'filename': filename}
+    //String? fragment
+  );
+
+//HttpClientRequest request = await client.getUrl(uri);
+  //var uri = Uri.http(baseUrl, '/channels/${channelId}/answer', qParams);
+  HttpClientRequest request = await httpRtpClient.getUrl(uri);
+  HttpClientResponse response = await request.close();
+  //print(response);
+  final String stringData = await response.transform(utf8.decoder).join();
+  print(stringData);
+  //print(response.statusCode);
+  // var port = jsonDecode(stringData); //print(stringData);
+
+  // return port['rtp_port'];
+  return (stringData, response.statusCode, null);
+}
 
 class CallQueue {
   Map<String, Agent> agents = {};
   Map<String, Agent> agentsLogged = {};
   late Ari ari_client;
 
-  CallQueue(List<String> agent_nums) {
+  CallQueue({Map<String, Agent>? agent_numbs}) {
+    // agent_nums.forEach((numb) {
+    //   agents[numb] = Agent(numb);
+    // });
+
+    // agentsAPI().then((resp) {
+    //   var (resp, statusCode, err) = resp;
+    // });
+
+    agentsAPI().then((value) {
+      var (resp, statusCode, err) = value;
+      // print(resp);
+
+      var agentsList = jsonDecode(resp); //print(stringData);
+      print("Agents available: ${agentsList.length}");
+      agentsList.forEach((agentEntry) {
+        print("Parsing JSON agent data: $agentEntry");
+        agents[agentEntry["endpoint"]] = Agent.fromJSON(agentEntry);
+      });
+    });
+  }
+
+  factory CallQueue.fromList(List<String> agent_nums) {
+    Map<String, Agent> agents = {};
     agent_nums.forEach((numb) {
       agents[numb] = Agent(numb);
     });
+
+    return CallQueue(agent_numbs: agents);
   }
+
+  fromAgentsAPI() {}
 
   Agent? nextAgent() {
     Agent? bestAgent;

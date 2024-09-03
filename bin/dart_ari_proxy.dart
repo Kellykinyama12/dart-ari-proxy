@@ -10,7 +10,10 @@
 // import 'package:dart_ari_proxy/ari_apps/call_center_bridge.dart';
 // import 'package:dart_ari_proxy/ari_apps/cc_bridge_agent.dart';
 //import 'package:dart_ari_proxy/ari_apps/cc_agent_bridge3.dart';
+//import 'package:dart_ari_proxy/ari_apps/call_center_bridge.dart';
+import 'package:dart_ari_proxy/ari_apps/call_queue/call_queue.dart';
 import 'package:dart_ari_proxy/ari_apps/cc_bridge_agent_final.dart';
+import 'package:dart_ari_proxy/globals.dart';
 
 void main(List<String> arguments) async {
   //call_center_queue(arguments);
@@ -19,5 +22,7 @@ void main(List<String> arguments) async {
   //app_ivr_2(arguments);
   //bridge_dial(arguments);
   //bridge_dial2(arguments);
+
+  callQueue = CallQueue();
   call_center_bridge(arguments);
 }

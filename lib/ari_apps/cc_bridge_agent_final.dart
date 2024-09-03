@@ -53,12 +53,12 @@ Future<int> rtpPort(String filename) async {
 }
 
 Ari client = Ari();
-CallQueue callQueue = CallQueue(agent_nums);
+//CallQueue callQueue = CallQueue(agent_nums);
 //CallQueue callQueue = CallQueue(['SIP/7000/1057', 'SIP/7000/3332']);
 
 //8940/1020/
 //CallQueue callQueue = CallQueue(['SIP/7000/1016', 'SIP/7000/1057']);
-//CallQueue callQueue = CallQueue(['1057']);
+//CallQueue callQueue = CallQueue();
 
 Map<String, CallRecording> voiceRecords = {};
 Map<String, bool> succeededCalls = {};
@@ -85,6 +85,7 @@ stasisStart(StasisStart event, Channel channel) async {
     //   channel.off();
     //   originate(channel);
     // }, 1000);
+
     Playback playback = client.playback();
     await channel.play(playback, media: ['sound:vm-dialout']);
 

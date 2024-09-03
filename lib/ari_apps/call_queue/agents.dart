@@ -14,11 +14,42 @@ class Agent {
   String endpoint;
   String? number; //:string
   String? setNumber; //?:string
-  AgentState state = AgentState.UNKNOWN;
-  AgentState status = AgentState.UNKNOWN;
+  AgentState? state; // = AgentState.UNKNOWN;
+  AgentState? status; // = AgentState.UNKNOWN;
   Statistics statistics = Statistics();
 
-  Agent(this.endpoint);
+  Agent(this.endpoint,
+      {this.name, this.state, this.status, this.number, this.setNumber});
+
+  factory Agent.fromJSON(data) {
+    AgentState state = AgentState.UNKNOWN;
+    AgentState status = AgentState.UNKNOWN;
+
+    switch (data["state"]) {
+      case "LOGGED_OUT":
+        {
+          state = AgentState.LOGGEDOUT;
+        }
+      case "LOGGED_IN":
+        {
+          state = AgentState.LOGGEDIN;
+        }
+    }
+
+    switch (data["status"]) {
+      case "WITHDRAWN":
+        {
+          status = AgentState.ONWITHDRAW;
+        }
+      case "LOGGED_IN":
+        {
+          status = AgentState.LOGGEDIN;
+        }
+    }
+
+    return Agent(data["endpoint"],
+        name: data["name"], state: state, status: status);
+  }
 }
 
 class Statistics {

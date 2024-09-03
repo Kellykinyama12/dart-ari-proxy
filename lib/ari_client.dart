@@ -374,7 +374,8 @@ class Ari extends EventEmitter {
     //resp.then((value) {
     //print(resp.resp);
     channelJson = json.decode(resp.resp);
-    Channel channel = Channel.fromJson(channelJson);
+    Channel channel = Channel.fromJson(channelJson,
+        channel: statisChannels[channelJson['id']]);
 
     statisChannels[channel.id] = channel;
 
@@ -404,11 +405,12 @@ class Ari extends EventEmitter {
         format: format,
         direction: direction);
 
-    //print(resp.resp);
+    print("External media: ${resp.resp}");
 
-    var channelJson = resp.resp;
+    var channelJson = jsonDecode(resp.resp);
 
-    Channel channel = Channel.fromJson(jsonDecode(channelJson));
+    Channel channel = Channel.fromJson(channelJson,
+        channel: statisChannels[channelJson['id']]);
 
     statisChannels[channel.id] = channel;
     return channel;
