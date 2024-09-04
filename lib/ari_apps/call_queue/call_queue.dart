@@ -30,7 +30,7 @@ Future<dynamic> agentsAPI(Uri uri) async {
   HttpClientResponse response = await request.close();
   //print(response);
   final String stringData = await response.transform(utf8.decoder).join();
-  print(stringData);
+  //print(stringData);
   //print(response.statusCode);
   // var port = jsonDecode(stringData); //print(stringData);
 
@@ -59,8 +59,9 @@ class CallQueue {
       var agentsList = jsonDecode(resp); //print(stringData);
       print("Agents available: ${agentsList.length}");
       agentsList.forEach((agentEntry) {
-        print("Parsing JSON agent data: $agentEntry");
+        //print("Parsing JSON agent data: $agentEntry");
         agents[agentEntry["endpoint"]] = Agent.fromJSON(agentEntry);
+        print("Create agent: ${agents[agentEntry["endpoint"]]}");
       });
     });
   }
@@ -79,10 +80,10 @@ class CallQueue {
   Agent? nextAgent() {
     Agent? bestAgent;
     agents.forEach((agent_num, agent) {
-      if (bestAgent == null) {
-        bestAgent = agent;
-        //return;
-      }
+      // if (bestAgent == null) {
+      //   bestAgent = agent;
+      //   //return;
+      // }
       // else if (bestAgent!.state == AgentState.LOGGEDIN) {
       //   if (agent.state == AgentState.UNKNOWN) {
       //     if (agent.statistics.unknownStateCallsTried <=
@@ -135,27 +136,26 @@ class CallQueue {
       //     bestAgent = agent;
       //   }
 
-      if (bestAgent!.state == AgentState.UNKNOWN &&
-          agent.state == AgentState.UNKNOWN &&
-          agent.statistics.unknownStateCallsTried <=
-              bestAgent!.statistics.unknownStateCallsTried) {
+      if (agent.state == AgentState.LOGGEDIN &&
+          agent.status == AgentState.IDLE) {
         bestAgent = agent;
       }
 
-      if (bestAgent!.state == AgentState.UNKNOWN &&
-          agent.state == AgentState.LOGGEDIN &&
-          agentsLogged.length < 10) {
-        bestAgent = agent;
-      }
+      // if (agent.state == AgentState.LOGGEDIN && agentsLogged.length < 10) {
+      //   bestAgent = agent;
+      // }
 
-      if (bestAgent!.state == AgentState.LOGGEDIN &&
-          agent.state == AgentState.LOGGEDIN &&
-          agent.statistics.answereCalls < bestAgent!.statistics.answereCalls) {
-        bestAgent = agent;
+      if (bestAgent != null) {
+        if (agent.state == AgentState.LOGGEDIN &&
+            agent.status == AgentState.IDLE &&
+            agent.statistics.answereCalls <
+                bestAgent!.statistics.answereCalls) {
+          bestAgent = agent;
+        }
       }
     });
 
-    return bestAgent!;
+    return bestAgent;
   }
 }
 

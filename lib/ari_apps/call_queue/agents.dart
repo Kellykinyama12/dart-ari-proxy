@@ -6,6 +6,7 @@ enum AgentState {
   IDLE,
   WRAPPINGUP,
   ONPRIVATECALL,
+  RINGING,
   UNKNOWN
 }
 
@@ -45,9 +46,14 @@ class Agent {
         {
           status = AgentState.ONWITHDRAW;
         }
-      case "LOGGED_IN":
+      case "ASSIGNED":
         {
           status = AgentState.LOGGEDIN;
+        }
+
+      case "IDLE":
+        {
+          status = AgentState.IDLE;
         }
 
       default:
@@ -58,6 +64,12 @@ class Agent {
 
     return Agent(data["endpoint"],
         name: data["name"], state: state, status: status);
+  }
+
+  @override
+  String toString() {
+    // TODO: implement ==
+    return "{agent_endpoint: $endpoint, state: $state, status: $status}";
   }
 }
 

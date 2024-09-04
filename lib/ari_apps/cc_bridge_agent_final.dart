@@ -107,14 +107,19 @@ Future<void> originate(Channel incoming) async {
 
   Agent? agent = callQueue.nextAgent();
 
-  print("Agent enpoint: ${agent!.endpoint}");
-  print("Agent state: ${agent!.state}");
+  print("Agent enpoint: ${agent?.endpoint}");
+  print("Agent state: ${agent?.state}");
   print("");
 
   if (agent == null) {
-    incoming.continueInDialplan(context: 'IVR-15', priority: 1);
+    await incoming.continueInDialplan(context: 'IVR-15', priority: 1);
+    if (callTimers[incoming.id] != null) {
+      callTimers[incoming.id]!.cancel();
+      callTimers.remove(incoming.id);
+    }
+    return;
   }
-  String endpoint = "SIP/7000/${agent!.endpoint}";
+  String endpoint = "SIP/7000/${agent.endpoint}";
 
   int rtpport = await rtpPort(filename);
   var dialed = await client.channel(endpoint: endpoint);
@@ -134,14 +139,23 @@ Future<void> originate(Channel incoming) async {
     callTimers.remove(incoming.id);
     await dialed.hangup();
     //incoming.off();
+
+    if (agent.status == AgentState.ONCONVERSATION) {
+      setTimeout(() {
+        print("setting agent state: to idle");
+        agent.status = AgentState.IDLE;
+      }, 30000);
+    } else {
+      agent.status = AgentState.IDLE;
+    }
   });
 
   //dialedChannelStateChange =
   dialed.on('ChannelStateChange', (event) {
-    //  print('Dialed status to: ${event.channel.state}');
     var (channelStateChangeEvent, dialChannel) =
         event as (ChannelStateChange, Channel);
     //Channel ch = csc.channel as Channel;
+    print('Dialed status to: ${dialChannel.state}');
     if (dialChannel.state == 'Up') {
       //print('Dialed status to: ${dialChannel.state}');
 
@@ -167,7 +181,7 @@ Future<void> originate(Channel incoming) async {
     if (dialChannel.state == 'Ringing') {
       // print('Dialed status to: ${dialChannel.state}');
       // print("Agent status changed to state: ${AgentState.LOGGEDIN}");
-      agent.state = AgentState.LOGGEDIN;
+      agent.status = AgentState.RINGING;
 
       callQueue.agentsLogged[agent.endpoint] = agent;
       agent.statistics.receivedCalls++;
@@ -197,6 +211,15 @@ Future<void> originate(Channel incoming) async {
         //print("Sending recording details to the dashboar");
         dsbClient!.send_call_records(voiceRecords[incoming.id]!);
         voiceRecords.remove(incoming.id);
+      }
+
+      if (agent.status == AgentState.ONCONVERSATION) {
+        setTimeout(() {
+          print("setting agent state: to idle");
+          agent.status = AgentState.IDLE;
+        }, 30000);
+      } else {
+        agent.status = AgentState.IDLE;
       }
     }
   });
@@ -231,7 +254,25 @@ Future<void> originate(Channel incoming) async {
       }
 
       await mixingBridge.destroy();
+
+      if (agent.status == AgentState.ONCONVERSATION) {
+        setTimeout(() {
+          print("setting agent state: to idle");
+          agent.status = AgentState.IDLE;
+        }, 30000);
+      } else {
+        agent.status = AgentState.IDLE;
+      }
     });
+
+    // if (agent.status == AgentState.ONCONVERSATION) {
+    //   setTimeout(() {
+    //     print("setting agent state: to idle");
+    //     agent.status = AgentState.IDLE;
+    //   }, 30000);
+    // } else {
+    //   agent.status = AgentState.IDLE;
+    // }
 
     await dialed.answer();
     Channel externalChannel = await client.externalMedia(
