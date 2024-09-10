@@ -33,6 +33,15 @@ void main(List<String> arguments) async {
 
   HttpAPIServer(apiIp, apiPort);
 
-  callQueue = CallQueue(Uri.parse(voice_records));
+  String host = env['DB_HOST']!;
+  String port = env['DB_PORT']!;
+  String database = env['DB_DATABASE']!;
+  String username = env['DB_USERNAME']!;
+  String password = env['DB_PASSWORD']!;
+
+  init_mysql_connection(host, port, database, username, password);
+  CallQueue.fromDB().then((cq) {
+    callQueue = cq;
+  });
   call_center_bridge(arguments);
 }

@@ -9,6 +9,7 @@ environment:
 # Add regular dependencies here.
 dependencies:
   dotenv: ^4.2.0
+  eloquent: ^3.2.1
   eventify: ^1.0.1
   events_emitter: ^0.5.2
   redis: ^4.0.0

@@ -41,6 +41,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
+  buffer:
+    dependency: transitive
+    description:
+      name: buffer
+      sha256: "389da2ec2c16283c8787e0adaede82b1842102f8c8aae2f49003a766c5c6b3d1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.3"
+  charcode:
+    dependency: transitive
+    description:
+      name: charcode
+      sha256: fb98c0f6d12c920a02ee2d998da788bca066ca5f148492b7085ee23372b12306
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.1"
+  clock:
+    dependency: transitive
+    description:
+      name: clock
+      sha256: cb6d7f03e1de671e34607e909a7213e31d7752be4fb66a86d29fe1eb14bfb5cf
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   collection:
     dependency: transitive
     description:
@@ -73,6 +97,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.3"
+  dargres:
+    dependency: transitive
+    description:
+      name: dargres
+      sha256: "937e528dbffa9299695c832fe9c2a82c1f751e67374fc6a2460b5a736d052cfd"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.2"
   dotenv:
     dependency: "direct main"
     description:
@@ -81,6 +113,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.2.0"
+  eloquent:
+    dependency: "direct main"
+    description:
+      name: eloquent
+      sha256: "43b75d3d0141a08a3007061f23257b0369332f1f1ed21b8269d88a333cc67594"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.2.1"
+  enough_convert:
+    dependency: transitive
+    description:
+      name: enough_convert
+      sha256: c67d85ca21aaa0648f155907362430701db41f7ec8e6501a58ad9cd9d8569d01
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.6.0"
   eventify:
     dependency: "direct main"
     description:
@@ -145,6 +193,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.2"
+  intl:
+    dependency: transitive
+    description:
+      name: intl
+      sha256: d6f56758b7d3014a48af9701c085700aac781a92a87a62b1333b46d8879661cf
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.19.0"
   io:
     dependency: transitive
     description:
@@ -201,6 +257,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
+  mysql_client:
+    dependency: transitive
+    description:
+      name: mysql_client
+      sha256: "6a0fdcbe3e0721c637f97ad24649be2f70dbce2b21ede8f962910e640f753fc2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.27"
   node_preamble:
     dependency: transitive
     description:
@@ -225,6 +289,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.0"
+  pg_timezone:
+    dependency: transitive
+    description:
+      name: pg_timezone
+      sha256: "50e23b4e5762972c96085328bfe14fd97a070a98afed6758c6035f64d50fa075"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   pool:
     dependency: transitive
     description:
@@ -233,6 +305,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.1"
+  postgres:
+    dependency: transitive
+    description:
+      name: postgres
+      sha256: b39a9b4c07430b2f8c8666ef865b556ffac843b75e44ead04741d0fbf851d427
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.3.0"
+  postgres_fork:
+    dependency: transitive
+    description:
+      name: postgres_fork
+      sha256: eb6d62e1c8f05984346a0c7831052eb6e793af46178ec4e540aca0124cd3b722
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.8.4"
   pub_semver:
     dependency: transitive
     description:
@@ -257,6 +345,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.27.7"
+  sasl_scram:
+    dependency: transitive
+    description:
+      name: sasl_scram
+      sha256: a47207a436eb650f8fdcf54a2e2587b850dc3caef9973ce01f332b07a6fc9cb9
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.1"
+  saslprep:
+    dependency: transitive
+    description:
+      name: saslprep
+      sha256: "3d421d10be9513bf4459c17c5e70e7b8bc718c9fc5ad4ba5eb4f5fd27396f740"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.3"
   shelf:
     dependency: transitive
     description:
@@ -377,6 +481,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.0"
+  tuple:
+    dependency: transitive
+    description:
+      name: tuple
+      sha256: a97ce2013f240b2f3807bcbaf218765b6f301c3eff91092bcfa23a039e7dd151
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.2"
   typed_data:
     dependency: transitive
     description:
@@ -385,6 +497,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.2"
+  unorm_dart:
+    dependency: transitive
+    description:
+      name: unorm_dart
+      sha256: "23d8bf65605401a6a32cff99435fed66ef3dab3ddcad3454059165df46496a3b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0"
   uuid:
     dependency: "direct main"
     description:

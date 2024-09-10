@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dart_ari_proxy/ari_apps/call_queue/agents.dart';
 import 'package:dart_ari_proxy/ari_client.dart';
+import 'package:dart_ari_proxy/globals.dart';
 
 HttpClient httpRtpClient = HttpClient();
 
@@ -43,7 +44,7 @@ class CallQueue {
   Map<String, Agent> agentsLogged = {};
   late Ari ari_client;
 
-  CallQueue(Uri uri, {Map<String, Agent>? agent_numbs}) {
+  CallQueue({Uri? uri, dynamic jsonData}) {
     // agent_nums.forEach((numb) {
     //   agents[numb] = Agent(numb);
     // });
@@ -51,19 +52,52 @@ class CallQueue {
     // agentsAPI().then((resp) {
     //   var (resp, statusCode, err) = resp;
     // });
+    agents.clear();
 
-    agentsAPI(uri).then((value) {
-      var (resp, statusCode, err) = value;
-      // print(resp);
+    if (uri != null) {
+      print("Initialising agent data from api");
+      agentsAPI(uri).then((value) {
+        var (resp, statusCode, err) = value;
+        // print(resp);
 
-      var agentsList = jsonDecode(resp); //print(stringData);
-      print("Agents available: ${agentsList.length}");
-      agentsList.forEach((agentEntry) {
-        //print("Parsing JSON agent data: $agentEntry");
-        agents[agentEntry["endpoint"]] = Agent.fromJSON(agentEntry);
-        print("Create agent: ${agents[agentEntry["endpoint"]]}");
+        var agentsList = jsonDecode(resp); //print(stringData);
+        print("Agents available: ${agentsList.length}");
+        agentsList.forEach((agentEntry) {
+          //print("Parsing JSON agent data: $agentEntry");
+          agents[agentEntry["endpoint"]] = Agent.fromJSON(agentEntry);
+          print("Create agent: ${agents[agentEntry["endpoint"]]}");
+        });
       });
-    });
+    } else {
+      if (jsonData != null) {
+        print("Initialising agent data from json");
+        var agentsList = jsonDecode(jsonData); //print(stringData);
+
+        agentsList.forEach((agentEntry) {
+          //print("Parsing JSON agent data: $agentEntry");
+          agents[agentEntry["endpoint"]] = Agent.fromJSON(agentEntry);
+          print("Create agent: ${agents[agentEntry["endpoint"]]}");
+        });
+        print("Agents available: ${agentsList.length}");
+      }
+    }
+  }
+
+  static Future<CallQueue> fromDB() async {
+    final db = await manager.connection();
+
+    //final dbdb) {
+    var res = await db
+        .table('agents')
+//       .selectRaw('id,name,tel')
+//       .join('contacts', 'contacts.id_client', '=', 'clients.id')
+        .get();
+
+    final resp = jsonEncode(res);
+    db.disconnect();
+    return CallQueue(jsonData: resp);
+
+//   exit(0);
   }
 
   // factory CallQueue.fromList(List<String> agent_nums) {
@@ -80,62 +114,7 @@ class CallQueue {
   Agent? nextAgent() {
     Agent? bestAgent;
     agents.forEach((agent_num, agent) {
-      // if (bestAgent == null) {
-      //   bestAgent = agent;
-      //   //return;
-      // }
-      // else if (bestAgent!.state == AgentState.LOGGEDIN) {
-      //   if (agent.state == AgentState.UNKNOWN) {
-      //     if (agent.statistics.unknownStateCallsTried <=
-      //         //bestAgent!.statistics.unknownStateCallsTried
-      //         3) {
-      //       bestAgent = agent;
-      //     }
-      //     //bestAgent = agent;
-      //   } else if (agent.state == AgentState.LOGGEDIN &&
-      //       agent.statistics.answereCalls <=
-      //           bestAgent!.statistics.answereCalls) {
-      //     bestAgent = agent;
-      //   }
-      // } else if (bestAgent!.state == AgentState.UNKNOWN) {
-      //   if (agent.state == AgentState.UNKNOWN) {
-      //     if (agent.statistics.unknownStateCallsTried <=
-      //         bestAgent!.statistics.unknownStateCallsTried) {
-      //       bestAgent = agent;
-      //     }
-      //     //bestAgent = agent;
-      //   }
-
-      //   //return;
-      // }
-      // else {
-      //   //Best agent is logged in
-      //   if (bestAgent!.state == AgentState.LOGGEDIN &&
-      //       agent.state == AgentState.UNKNOWN &&
-      //       agent.statistics.unknownStateCallsTried < 2 &&
-      //       agent.status != AgentState.ONCONVERSATION) {
-      //     print("Selecting alernative agent: ${agent.endpoint}");
-      //     bestAgent = agent;
-      //   } else if (bestAgent!.state == AgentState.LOGGEDIN &&
-      //       agent.state == AgentState.LOGGEDIN &&
-      //       agent.statistics.answereCalls <
-      //           bestAgent!.statistics.answereCalls &&
-      //       agent.status != AgentState.ONCONVERSATION) {
-      //     bestAgent = agent;
-      //   } else if (bestAgent!.state == AgentState.UNKNOWN &&
-      //       agent.state == AgentState.UNKNOWN &&
-      //       agent.statistics.unknownStateCallsTried <
-      //           bestAgent!.statistics.unknownStateCallsTried &&
-      //       agent.status != AgentState.ONCONVERSATION) {
-      //     bestAgent = agent;
-      //   } else if (bestAgent!.state == AgentState.LOGGEDIN &&
-      //       agent.state == AgentState.LOGGEDIN &&
-      //       agent.statistics.receivedCalls <
-      //           bestAgent!.statistics.receivedCalls &&
-      //       agent.status != AgentState.ONCONVERSATION) {
-      //     bestAgent = agent;
-      //   }
-
+      print("agent: $agent");
       if (agent.state == AgentState.LOGGEDIN &&
           agent.status == AgentState.IDLE) {
         bestAgent = agent;
