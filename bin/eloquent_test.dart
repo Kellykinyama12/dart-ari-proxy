@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+//import 'dart:io';
 import 'package:eloquent/eloquent.dart';
 
 void main(List<String> args) async {
@@ -17,7 +17,9 @@ void main(List<String> args) async {
 
   manager.setAsGlobal();
 
-  final db = await manager.connection();
+  var db = await manager.connection();
+  await db.disconnect();
+  db = await manager.connection();
 
 //   await db.execute('DROP TABLE clients');
 //   await db.execute(''' CREATE TABLE IF NOT EXISTS clients (
@@ -46,16 +48,28 @@ void main(List<String> args) async {
 //   await db.table('contacts').insert({'id_client': 1, 'tel': '27772339'});
 //   await db.table('contacts').insert({'id_client': 2, 'tel': '99705498'});
 
-  var res = await db
-      .table('agents')
-//       .selectRaw('id,name,tel')
-//       .join('contacts', 'contacts.id_client', '=', 'clients.id')
-      .get();
-  final resp = jsonEncode(res);
+//   var res = await db
+//       .table('agents')
+// //       .selectRaw('id,name,tel')
+// //       .join('contacts', 'contacts.id_client', '=', 'clients.id')
+//       .get();
+//   final resp = jsonEncode(res);
 
   //PDOResults;
-  print(resp);
+  // print(resp);
 //   //res: [{id: 1, name: Isaque update, tel: 27772339}, {id: 2, name: John Doe, tel: 99705498}]
+
+  await db.table('recordings').insert({
+    "agent_number": "",
+    "phone_number": "",
+    "duration_number": "",
+    "file_name": "",
+    "file_path": "",
+    //"transcription": "",
+    "created_at": DateTime.now().toString(),
+    "updated_at": DateTime.now().toString(),
+  });
+
   await db.disconnect();
 
 //   exit(0);

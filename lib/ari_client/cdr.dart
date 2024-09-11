@@ -1,3 +1,6 @@
+//import 'package:dart_ari_proxy/globals.dart';
+import 'package:eloquent/eloquent.dart';
+
 class Cdr {
   Cdr({
     this.accountcode, //?: string,
@@ -86,5 +89,32 @@ class CallRecording {
       "file_path": file_path ?? "",
       "transcription": transcription ?? "",
     };
+  }
+
+  Future<void> insert_call_recording() async {
+    final manager = Manager();
+    manager.addConnection({
+      'driver': 'mysql',
+      'host': '10.44.0.55',
+      'port': '3306',
+      'database': 'asterisk',
+      'username': 'dashboard',
+      'password': 'dashboard.123',
+      // 'pool': true,
+      // 'poolsize': 2,
+    });
+    manager.setAsGlobal();
+    final db = await manager.connection();
+    await db.table('recordings').insert({
+      "agent_number": agent_number ?? "",
+      "phone_number": phone_number ?? "",
+      "duration_number": duration_number ?? "",
+      "file_name": file_name ?? "",
+      "file_path": file_path ?? "",
+      //"transcription": transcription ?? "",
+      "created_at": DateTime.now().toString(),
+      "updated_at": DateTime.now().toString(),
+    });
+    await db.disconnect();
   }
 }

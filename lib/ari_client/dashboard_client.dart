@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+//import 'package:dart_ari_proxy/globals.dart';
+import 'package:eloquent/eloquent.dart';
+
 import 'cdr.dart';
 
 class DasboardClient {
@@ -93,6 +96,25 @@ class DasboardClient {
     } catch (err) {
       print(err);
     }
+  }
+
+  Future<dynamic> send_call_records_to_db(CallRecording cdr) async {
+    var params = cdr.parse();
+    final manager = Manager();
+    manager.setAsGlobal();
+    manager.addConnection({
+      'driver': 'mysql',
+      'host': '10.44.0.55',
+      'port': '3306',
+      'database': 'asterisk',
+      'username': 'dashboard',
+      'password': 'dashboard.123',
+      // 'pool': true,
+      // 'poolsize': 2,
+    });
+    final db = await manager.connection();
+    await db.table('recordings').insert(params);
+    await db.disconnect();
   }
 
   HttpClient client = HttpClient();

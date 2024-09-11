@@ -16,6 +16,7 @@ import 'package:dart_ari_proxy/ari_apps/call_queue/http.dart';
 import 'package:dart_ari_proxy/ari_apps/cc_bridge_agent_final.dart';
 import 'package:dart_ari_proxy/globals.dart';
 import 'package:dotenv/dotenv.dart';
+import 'package:redis/redis.dart';
 
 void main(List<String> arguments) async {
   //call_center_queue(arguments);
@@ -28,10 +29,22 @@ void main(List<String> arguments) async {
   String apiIp = env['API_HTTP_SERVER_ADDRESS']!;
   int apiPort = int.parse(env['API_HTTP_SERVER_PORT']!);
 
-  String voice_records = env['AGENTS_ENDPOINT']!;
+  //String voice_records = env['AGENTS_ENDPOINT']!;
   //String cdr_records = env['DASHBOARD_CDR_ENDPOINT']!;
 
-  HttpAPIServer(apiIp, apiPort);
+  String redisIp = env['REDIS_ADDRESS']!;
+  int redisPort = int.parse(env['REDIS_PORT']!);
+  String redisPassword = env['REDIS_PASSWORD']!;
+
+  redisCmd = await redisConnection.connect(redisIp, redisPort);
+
+  var redisRes = await redisCmd.send_object(["AUTH", redisPassword]);
+
+  //redisPubsub = PubSub(cmd);
+
+  print("Redis auth response: $redisRes");
+
+  HttpAPIServer(apiIp, apiPort, redisIp, redisPort, redisPassword);
 
   String host = env['DB_HOST']!;
   String port = env['DB_PORT']!;

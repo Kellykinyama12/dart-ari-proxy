@@ -209,7 +209,8 @@ Future<void> originate(Channel incoming) async {
         voiceRecords[incoming.id]!.duration_number =
             channelDestroyedEvent.timestamp.toString();
         //print("Sending recording details to the dashboar");
-        dsbClient!.send_call_records(voiceRecords[incoming.id]!);
+        //dsbClient!.send_call_records_to_db(voiceRecords[incoming.id]!);
+        //await voiceRecords[incoming.id]!.insert_call_recording();
         voiceRecords.remove(incoming.id);
       }
 
@@ -225,7 +226,7 @@ Future<void> originate(Channel incoming) async {
   });
 
   dialed.once('StasisStart', (event) async {
-    var (stasisStartEvent, channel) = event as (StasisStart, Channel);
+    //var (stasisStartEvent, channel) = event as (StasisStart, Channel);
     //print('outgoing.once StasisStart event:${stasisStartEvent.type}');
     //print('outgoing.once StasisStart outgoing:${channel.id}');
 
@@ -248,7 +249,8 @@ Future<void> originate(Channel incoming) async {
           voiceRecords[incoming.id]!.duration_number =
               stasisEndEvent.timestamp.toString();
           //print("Sending recording details to the dashboar");
-          dsbClient!.send_call_records(voiceRecords[incoming.id]!);
+          //await dsbClient!.send_call_records_to_db(voiceRecords[incoming.id]!);
+          await voiceRecords[incoming.id]!.insert_call_recording();
           voiceRecords.remove(incoming.id);
         }
       }
@@ -264,15 +266,6 @@ Future<void> originate(Channel incoming) async {
         agent.status = AgentState.IDLE;
       }
     });
-
-    // if (agent.status == AgentState.ONCONVERSATION) {
-    //   setTimeout(() {
-    //     print("setting agent state: to idle");
-    //     agent.status = AgentState.IDLE;
-    //   }, 30000);
-    // } else {
-    //   agent.status = AgentState.IDLE;
-    // }
 
     await dialed.answer();
     Channel externalChannel = await client.externalMedia(
@@ -329,7 +322,8 @@ void call_center_bridge(List<String> args) async {
     stasisStart(stasisStartEvent, channel);
   });
 
-  ws.listen((event) {
+  ws.listen((event) async {
+    await redisCmd.send_object(["PUBLISH", "monkey", event]);
     var data = json.decode(event);
     switch (data['type']) {
       case "StasisStart":

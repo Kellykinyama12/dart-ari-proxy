@@ -12,6 +12,7 @@ dependencies:
   eloquent: ^3.2.1
   eventify: ^1.0.1
   events_emitter: ^0.5.2
+  get_storage: ^2.1.1
   redis: ^4.0.0
   uuid: ^4.3.3
   # path: ^1.8.0

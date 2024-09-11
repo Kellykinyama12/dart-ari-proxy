@@ -114,7 +114,7 @@ class CallQueue {
   Agent? nextAgent() {
     Agent? bestAgent;
     agents.forEach((agent_num, agent) {
-      print("agent: $agent");
+      //print("agent: $agent");
       if (agent.state == AgentState.LOGGEDIN &&
           agent.status == AgentState.IDLE) {
         bestAgent = agent;
