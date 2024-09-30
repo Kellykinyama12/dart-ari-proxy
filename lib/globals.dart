@@ -13,24 +13,33 @@ String api_key = 'asterisk:asterisk';
 
 late CallQueue callQueue; // = CallQueue();
 
-final manager = Manager();
+late String asteriskDbHost;
+late String asteriskDbPort;
+late String asteriskDbName;
+late String asteriskDbUsername;
+late String asteriskDbPassword;
+
+// final manager = Manager();
 final redisConnection = RedisConnection();
 
-late PubSub redisPubsub;// = PubSub(command);
- late Command redisCmd;
+late PubSub redisPubsub; // = PubSub(command);
+late Command redisCmd;
 
-void init_mysql_connection(String host, String port, String database,
-    String username, String password) {
-  manager.addConnection({
-    'driver': 'mysql',
-    'host': host,
-    'port': port,
-    'database': database,
-    'username': username,
-    'password': password,
-    // 'pool': true,
-    // 'poolsize': 2,
-  });
+// void init_mysql_connection(String host, String port, String database,
+//     String username, String password) {
 
-  manager.setAsGlobal();
-}
+// final manager = Manager();
+
+//   manager.addConnection({
+//     'driver': 'mysql',
+//     'host': asteriskDbHost,
+//     'port': asteriskDbPort,
+//     'database': asteriskDbName,
+//     'username': asteriskDbUsername,
+//     'password': asteriskDbPassword,
+//     // 'pool': true,
+//     // 'poolsize': 2,
+//   });
+
+//   manager.setAsGlobal();
+// }

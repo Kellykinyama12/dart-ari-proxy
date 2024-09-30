@@ -563,6 +563,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
+  telnet:
+    dependency: "direct main"
+    description:
+      name: telnet
+      sha256: cceaf9e6f9020bca6d5f5b373cba444add5b7e871493db014a731ae0b5dffdaf
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.7"
   term_glyph:
     dependency: transitive
     description:

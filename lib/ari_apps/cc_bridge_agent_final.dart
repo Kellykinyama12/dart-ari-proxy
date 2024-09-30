@@ -160,10 +160,15 @@ Future<void> originate(Channel incoming) async {
       //print('Dialed status to: ${dialChannel.state}');
 
       voiceRecords[incoming.id] = CallRecording(
-          file_name: filename,
-          file_path: filename,
-          agent_number: endpoint,
-          phone_number: incoming.caller.number);
+        file_name: filename,
+        file_path: filename,
+        agent_number: endpoint,
+        phone_number: incoming.caller.number,
+        answerdate: DateTime.now().toString(),
+        src: incoming.caller.number,
+        dst: agent.endpoint,
+        clid: incoming.caller.number,
+      );
 
       //print("Initialised the recording: ${voiceRecords[channel.id]}");
 
@@ -208,6 +213,8 @@ Future<void> originate(Channel incoming) async {
       if (voiceRecords[incoming.id] != null) {
         voiceRecords[incoming.id]!.duration_number =
             channelDestroyedEvent.timestamp.toString();
+        voiceRecords[incoming.id]!.hangupdate =
+            channelDestroyedEvent.timestamp.toString();
         //print("Sending recording details to the dashboar");
         //dsbClient!.send_call_records_to_db(voiceRecords[incoming.id]!);
         //await voiceRecords[incoming.id]!.insert_call_recording();
@@ -247,6 +254,9 @@ Future<void> originate(Channel incoming) async {
         //   //   if (dsbClient != null) {
         if (voiceRecords[incoming.id] != null) {
           voiceRecords[incoming.id]!.duration_number =
+              stasisEndEvent.timestamp.toString();
+
+          voiceRecords[incoming.id]!.hangupdate =
               stasisEndEvent.timestamp.toString();
           //print("Sending recording details to the dashboar");
           //await dsbClient!.send_call_records_to_db(voiceRecords[incoming.id]!);
@@ -325,6 +335,7 @@ void call_center_bridge(List<String> args) async {
   ws.listen((event) async {
     await redisCmd.send_object(["PUBLISH", "monkey", event]);
     var data = json.decode(event);
+
     switch (data['type']) {
       case "StasisStart":
         {
@@ -339,6 +350,9 @@ void call_center_bridge(List<String> args) async {
             client.statisChannels[channel.id]!.emit(data['type'],
                 (stasisStartEvent, client.statisChannels[channel.id]));
           }
+
+          await redisCmd.send_object(
+              ["PUBLISH", "monkey", jsonEncode(client.statisChannels)]);
 
           //channel.stasisStart(stasisStartEvent, channel);
 
@@ -362,6 +376,9 @@ void call_center_bridge(List<String> args) async {
           }
 
           //channel.stasisEnd(stasisEndEvent, channel);
+          final jsonData = jsonEncode(client.statisChannels);
+          //print("Channels: $jsonData");
+          await redisCmd.send_object(["PUBLISH", "monkey", jsonData]);
 
           client.emit(data['type'], (stasisEndEvent, channel));
         }
@@ -390,6 +407,9 @@ void call_center_bridge(List<String> args) async {
           //client.channelDestroyed(channelDestroyedEvent);
 
           //client.channelDestroyed(channelDestroyedEvent, channel);
+          final jsonData = jsonEncode(client.statisChannels);
+          //print("Channels: $jsonData");
+          await redisCmd.send_object(["PUBLISH", "monkey", jsonData]);
 
           client.emit(data['type'], (channelDestroyedEvent, channel));
         }
@@ -412,6 +432,10 @@ void call_center_bridge(List<String> args) async {
 
           //client.channelStateChange(channelStateChangeEvent);
           //client.channelStateChange(channelStateChangeEvent, channel);
+
+          final jsonData = jsonEncode(client.statisChannels);
+          //print("Channels: $jsonData");
+          await redisCmd.send_object(["PUBLISH", "monkey", jsonData]);
 
           client.emit(data['type'], (channelStateChangeEvent, channel));
         }

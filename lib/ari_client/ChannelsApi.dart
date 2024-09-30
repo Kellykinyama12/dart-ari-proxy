@@ -1459,4 +1459,13 @@ class Channel extends Resource {
       }
     });
   }
+
+  @override
+  String toString() {
+    return jsonEncode(json);
+  }
+
+  String toJson() {
+    return jsonEncode(json);
+  }
 }

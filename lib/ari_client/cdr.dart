@@ -71,7 +71,16 @@ class CallRecording {
       {required this.agent_number,
       required this.phone_number,
       required this.file_path,
-      required this.file_name});
+      required this.file_name,
+      this.src,
+      this.dst,
+      this.clid,
+      this.calldate,
+      this.answerdate,
+      this.hangupdate,
+      this.duration,
+      this.billsec,
+      this.disposition});
 
   String? agent_number; //?: string;
   String? phone_number; //?: string;
@@ -79,6 +88,16 @@ class CallRecording {
   String? file_name; //?: string;
   String? file_path; //?: Ari.CallerID;
   String? transcription; //?: string;
+
+  String? src;
+  String? dst;
+  String? clid;
+  String? calldate;
+  String? answerdate;
+  String? hangupdate;
+  String? duration;
+  String? billsec;
+  String? disposition;
 
   Map<String, String> parse() {
     return {
@@ -111,6 +130,16 @@ class CallRecording {
       "duration_number": duration_number ?? "",
       "file_name": file_name ?? "",
       "file_path": file_path ?? "",
+
+      'src': src ?? "",
+      'dst': dst ?? "",
+      'clid': clid ?? "",
+      'calldate': calldate ?? "",
+      'answerdate': answerdate ?? "",
+      'hangupdate': hangupdate ?? "",
+      'duration': duration ?? "",
+      'billsec': billsec ?? "",
+      'disposition': disposition ?? "",
       //"transcription": transcription ?? "",
       "created_at": DateTime.now().toString(),
       "updated_at": DateTime.now().toString(),

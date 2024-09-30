@@ -1,3 +1,8 @@
+import 'dart:convert';
+
+import 'package:dart_ari_proxy/globals.dart';
+import 'package:eloquent/eloquent.dart';
+
 enum AgentState {
   LOGGEDIN,
   LOGGEDOUT,
@@ -18,9 +23,43 @@ class Agent {
   AgentState? state; // = AgentState.UNKNOWN;
   AgentState? status; // = AgentState.UNKNOWN;
   Statistics statistics = Statistics();
+  String? pbxStatus;
+  bool databaseRefresh = true;
 
   Agent(this.endpoint,
-      {this.name, this.state, this.status, this.number, this.setNumber});
+      {this.name, this.state, this.status, this.number, this.setNumber}) {}
+
+  static Future<Agent> refreshDataFromDB(String endpoint) async {
+    final manager = Manager();
+
+    manager.addConnection({
+      'driver': 'mysql',
+      'host': asteriskDbHost,
+      'port': asteriskDbPort,
+      'database': asteriskDbName,
+      'username': asteriskDbUsername,
+      'password': asteriskDbPassword,
+      // 'pool': true,
+      // 'poolsize': 2,
+    });
+
+    manager.setAsGlobal();
+    final db = await manager.connection();
+
+    //final dbdb) {
+    var res = await db
+        .table('recordings')
+        .where('agent_number', '=', endpoint)
+//       .selectRaw('id,name,tel')
+//       .join('contacts', 'contacts.id_client', '=', 'clients.id')
+        .get();
+
+    final resp = jsonEncode(res);
+    print("agent stats: $resp");
+    db.disconnect();
+    return Agent(endpoint); //,
+    //{this.name, this.state, this.status, this.number, this.setNumber})
+  }
 
   factory Agent.fromJSON(data) {
     AgentState state = AgentState.UNKNOWN;
