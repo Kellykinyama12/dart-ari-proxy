@@ -421,8 +421,6 @@ class CallQueue {
                 agent.pbxStatus = agentDynamicStatus;
 
                 if (agentStatus.trim() == "free") {
-                  agent.state = AgentState.LOGGEDIN;
-                  agent.status = AgentState.IDLE;
                   // print("Agent status: ${agent.pbxStatus}");
                   "prefer pg dir nb :          8800";
                   int pgIndex = pg.indexOf("prefer pg dir nb :");
