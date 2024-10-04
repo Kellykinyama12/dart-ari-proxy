@@ -461,7 +461,6 @@ class CallQueue {
 
         "dynamic state :     ext acd conv |";
       }
-
       //await db.disconnect();
       //print("agent: $agent");
     });
