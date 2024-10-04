@@ -391,23 +391,7 @@ class CallQueue {
   Agent? nextAgent() {
     Agent? bestAgent;
     agents.forEach((agent_num, agent) {
-      // final manager = Manager();
-      // manager.addConnection({
-      //   'driver': 'mysql',
-      //   'host': '10.44.0.55',
-      //   'port': '3306',
-      //   'database': 'asterisk',
-      //   'username': 'dashboard',
-      //   'password': 'dashboard.123',
-      //   // 'pool': true,
-      //   // 'poolsize': 2,
-      // });
-
-      // manager.setAsGlobal();
-      // final db = await manager.connection();
       if (callCenterPeople[agent_num] != null) {
-        // print("pbx agent status: ${callCenterPeople[agent_num]?.AgentStatus}");
-
         if (callCenterPeople[agent_num]!.AgentStatus != null) {
           // print("Agent status: ${callCenterPeople[agent_num]!.AgentStatus}");
           String staticText = callCenterPeople[agent_num]!.AgentStatus!;
@@ -426,8 +410,6 @@ class CallQueue {
               //print("Agent status: ${agent.pbxStatus}");
               // print(
               //     "Agent state normal: ${callCenterPeople[agent_num]!.AgentStatus}");
-              agent.state = AgentState.LOGGEDIN;
-              agent.status = AgentState.IDLE;
 
               int dynamicIndex = dyanmicText.indexOf("dynamic state :");
 
@@ -439,6 +421,8 @@ class CallQueue {
                 agent.pbxStatus = agentDynamicStatus;
 
                 if (agentStatus.trim() == "free") {
+                  agent.state = AgentState.LOGGEDIN;
+                  agent.status = AgentState.IDLE;
                   // print("Agent status: ${agent.pbxStatus}");
                   "prefer pg dir nb :          8800";
                   int pgIndex = pg.indexOf("prefer pg dir nb :");
