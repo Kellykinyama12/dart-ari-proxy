@@ -59,6 +59,18 @@ class HttpAPIServer {
             request.response
               ..statusCode = HttpStatus.ok
               ..close();
+          } else if (queryParams['agentstatus'] != null) {
+            if (callQueue.agents[queryParams['endpoint']] != null &&
+                queryParams['status'] == 'WITHDRAWN') {
+              if (currentAgent != null) {
+                currentAgent!(queryParams['endpoint']!);
+              }
+              print(
+                  "agent ${callQueue.agents[queryParams['endpoint']]!.endpoint} om withdraw");
+            }
+            request.response
+              ..statusCode = HttpStatus.ok
+              ..close();
           } else {
             request.response
               ..statusCode = HttpStatus.badRequest

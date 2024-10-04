@@ -61,6 +61,29 @@ class Agent {
     //{this.name, this.state, this.status, this.number, this.setNumber})
   }
 
+  void saveStatusToDb(String status) async {
+    var manager = Manager();
+    manager.addConnection({
+      'driver': 'mysql',
+      'host': asteriskDbHost,
+      'port': asteriskDbPort,
+      'database': asteriskDbName,
+      'username': asteriskDbUsername,
+      'password': asteriskDbPassword,
+      // 'pool': true,
+      // 'poolsize': 2,
+    });
+
+    final db = await manager.connection();
+
+    await db
+        .table('agents')
+        .where('endpoint', '=', endpoint)
+        .update({'state': status});
+
+    await db.disconnect();
+  }
+
   factory Agent.fromJSON(data) {
     AgentState state = AgentState.UNKNOWN;
     AgentState status = AgentState.UNKNOWN;

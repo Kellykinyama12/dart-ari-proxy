@@ -4,7 +4,6 @@ import 'dart:io';
 
 //import 'package:dart_ari_proxy/ari_apps/bridge_dial.dart';
 import 'package:dart_ari_proxy/ari_apps/call_queue/agents.dart';
-import 'package:dart_ari_proxy/ari_apps/call_queue/call_queue.dart';
 import 'package:dart_ari_proxy/ari_client.dart';
 import 'package:dart_ari_proxy/ari_client/BridgesApi.dart';
 import 'package:dart_ari_proxy/ari_client/PlaybackApi.dart';
