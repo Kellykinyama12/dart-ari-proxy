@@ -4,6 +4,7 @@ import 'dart:io';
 
 //import 'package:dart_ari_proxy/ari_apps/bridge_dial.dart';
 import 'package:dart_ari_proxy/ari_apps/call_queue/agents.dart';
+import 'package:dart_ari_proxy/ari_apps/db_queries.dart';
 import 'package:dart_ari_proxy/ari_client.dart';
 import 'package:dart_ari_proxy/ari_client/BridgesApi.dart';
 import 'package:dart_ari_proxy/ari_client/PlaybackApi.dart';
@@ -22,42 +23,28 @@ import 'package:uuid/uuid.dart';
 
 String recorderIp = "10.43.0.55";
 HttpClient httpRtpClient = HttpClient();
-//import 'package:events_emitter/listener.dart';
-Future<int> rtpPort(String filename) async {
-  // baseUrl.path = baseUrl.path + '/channels';
-
-  //10.100.54.137
+Future<int?> rtpPort(String filename) async {
   var uri = Uri(
       scheme: "http",
       userInfo: "",
       host: "zqa1.zesco.co.zm",
       port: 8080,
-      //path: "ari/channels/$channelId/answer",
-      //Iterable<String>? pathSegments,
       query: "",
-      queryParameters: {'filename': filename}
-      //String? fragment
-      );
-
-//HttpClientRequest request = await client.getUrl(uri);
-  //var uri = Uri.http(baseUrl, '/channels/${channelId}/answer', qParams);
-  HttpClientRequest request = await httpRtpClient.postUrl(uri);
-  HttpClientResponse response = await request.close();
-  //print(response);
-  final String stringData = await response.transform(utf8.decoder).join();
-  print(response.statusCode);
-  var port = jsonDecode(stringData); //print(stringData);
-
-  return port['rtp_port'];
+      queryParameters: {'filename': filename});
+  try {
+    HttpClientRequest request = await httpRtpClient.postUrl(uri);
+    HttpClientResponse response = await request.close();
+    //print(response);
+    final String stringData = await response.transform(utf8.decoder).join();
+    print(response.statusCode);
+    var port = jsonDecode(stringData); //print(stringData);
+    return port['rtp_port'];
+  } catch (e) {
+    print("Error: $e");
+  }
 }
 
 Ari client = Ari();
-//CallQueue callQueue = CallQueue(agent_nums);
-//CallQueue callQueue = CallQueue(['SIP/7000/1057', 'SIP/7000/3332']);
-
-//8940/1020/
-//CallQueue callQueue = CallQueue(['SIP/7000/1016', 'SIP/7000/1057']);
-//CallQueue callQueue = CallQueue();
 
 Map<String, CallRecording> voiceRecords = {};
 Map<String, bool> succeededCalls = {};
@@ -65,9 +52,7 @@ Map<String, Timer> callTimers = {};
 
 stasisStart(StasisStart event, Channel channel) async {
   bool dialed = event.args.length > 0 ? event.args[0] == 'dialed' : false;
-  //Channel channel = event.channel;
   if (channel.name.contains('UnicastRTP')) {
-    //print('Channel ${channel.name} has entered our application');
     dialed = true;
   }
 
@@ -76,14 +61,6 @@ stasisStart(StasisStart event, Channel channel) async {
     await channel.answer();
 
     succeededCalls[channel.id] = false;
-
-    //originate(channel);
-
-    // callTimers[channel.id] = setTimeout(() {
-    //   print("calling originate");
-    //   channel.off();
-    //   originate(channel);
-    // }, 1000);
 
     Playback playback = client.playback();
     await channel.play(playback, media: ['sound:vm-dialout']);
@@ -99,13 +76,11 @@ stasisStart(StasisStart event, Channel channel) async {
 }
 
 Future<void> originate(Channel incoming) async {
-  //const outgoing = client.Channel();
-
   Uuid uid = Uuid();
   String filename = uid.v1();
 
   Agent? agent = callQueue.nextAgent();
-
+  agent?.statistics.unknownStateCallsTried++;
   print("Agent enpoint: ${agent?.endpoint}");
   print("Agent state: ${agent?.state}");
   print("");
@@ -120,17 +95,13 @@ Future<void> originate(Channel incoming) async {
   }
   String endpoint = "SIP/7000/${agent.endpoint}";
 
-  int rtpport = await rtpPort(filename);
+  int? rtpport = await rtpPort(filename);
   var dialed = await client.channel(endpoint: endpoint);
+
+  Channel externalChannel;
 
   incoming.once('StasisEnd', (event) async {
     var (stasisEndEvent, channel) = event as (StasisEnd, Channel);
-    //print('incoming.once StasisEnd event:${stasisEndEvent.type}');
-    //print('incoming.once StasisEnd channel: ${channel.id}');
-    // if (callTimers[incoming.id] != null) {
-    //   callTimers[incoming.id]!.cancel();
-    //   callTimers.remove(incoming.id);
-    // }
     if (callTimers[incoming.id] != null) {
       callTimers[incoming.id]!.cancel();
       callTimers.remove(incoming.id);
@@ -142,40 +113,30 @@ Future<void> originate(Channel incoming) async {
     if (agent.status == AgentState.ONCONVERSATION) {
       setTimeout(() {
         print("setting agent state: to idle");
-        agent.status = AgentState.IDLE;
+        //agent.status = AgentState.IDLE;
       }, 30000);
-    } else {
-      agent.status = AgentState.IDLE;
-    }
+    } else {}
   });
 
-  //dialedChannelStateChange =
   dialed.on('ChannelStateChange', (event) {
     var (channelStateChangeEvent, dialChannel) =
         event as (ChannelStateChange, Channel);
-    //Channel ch = csc.channel as Channel;
     print('Dialed status to: ${dialChannel.state}');
     if (dialChannel.state == 'Up') {
-      //print('Dialed status to: ${dialChannel.state}');
-
       voiceRecords[incoming.id] = CallRecording(
         file_name: filename,
         file_path: filename,
         agent_number: endpoint,
         phone_number: incoming.caller.number,
-        answerdate: DateTime.now().toString(),
+        answerdate: channelStateChangeEvent.timestamp.toString(),
         src: incoming.caller.number,
         dst: agent.endpoint,
         clid: incoming.caller.number,
       );
-
-      //print("Initialised the recording: ${voiceRecords[channel.id]}");
-
       agent.statistics.answereCalls++;
       agent.status = AgentState.ONCONVERSATION;
-      //playback.stop((callback) {});
-      // if (callTimers[incoming.id] != null) {
-      //  callTimers[incoming.id]!.cancel();
+      DbQueries.updateAgentStatus(
+          agent.endpoint, agent.state.toString(), agent.status.toString());
       print("Removing timer ...");
       callTimers.remove(incoming.id);
       succeededCalls[incoming.id] = true;
@@ -183,9 +144,9 @@ Future<void> originate(Channel incoming) async {
     }
 
     if (dialChannel.state == 'Ringing') {
-      // print('Dialed status to: ${dialChannel.state}');
-      // print("Agent status changed to state: ${AgentState.LOGGEDIN}");
       agent.status = AgentState.RINGING;
+      DbQueries.updateAgentStatus(
+          agent.endpoint, agent.state.toString(), agent.status.toString());
 
       callQueue.agentsLogged[agent.endpoint] = agent;
       agent.statistics.receivedCalls++;
@@ -198,25 +159,15 @@ Future<void> originate(Channel incoming) async {
 
   dialed.once('ChannelDestroyed', (event) async {
     var (channelDestroyedEvent, channel) = event as (ChannelDestroyed, Channel);
-    //print('outgoing.once ChannelDestroyed event:${channelDestroyedEvent.type}');
-    //print('outgoing.once ChannelDestroyed channel:${channel.id}');
-
-    //await incoming.hangup();
-
     if (succeededCalls[incoming.id] == true) {
-      //print("Redirecting call");
       await incoming.continueInDialplan(
           context: 'call-rating', priority: 1, extension: 's');
 
-      //   //   if (dsbClient != null) {
       if (voiceRecords[incoming.id] != null) {
         voiceRecords[incoming.id]!.duration_number =
             channelDestroyedEvent.timestamp.toString();
         voiceRecords[incoming.id]!.hangupdate =
             channelDestroyedEvent.timestamp.toString();
-        //print("Sending recording details to the dashboar");
-        //dsbClient!.send_call_records_to_db(voiceRecords[incoming.id]!);
-        //await voiceRecords[incoming.id]!.insert_call_recording();
         voiceRecords.remove(incoming.id);
       }
 
@@ -224,42 +175,29 @@ Future<void> originate(Channel incoming) async {
         setTimeout(() {
           print("setting agent state: to idle");
           agent.status = AgentState.IDLE;
+          DbQueries.updateAgentStatus(
+              agent.endpoint, agent.state.toString(), agent.status.toString());
         }, 30000);
-      } else {
-        agent.status = AgentState.IDLE;
-      }
+      } else {}
     }
   });
 
   dialed.once('StasisStart', (event) async {
-    //var (stasisStartEvent, channel) = event as (StasisStart, Channel);
-    //print('outgoing.once StasisStart event:${stasisStartEvent.type}');
-    //print('outgoing.once StasisStart outgoing:${channel.id}');
-
-    //const bridge = client.Bridge();
-    ///Bridge mixingBridge = await client.bridge(type: ['mixing']);
     Bridge mixingBridge = await client.bridge(type: ['mixing']);
 
     dialed.once('StasisEnd', (event) async {
       var (stasisEndEvent, channel) = event as (StasisEnd, Channel);
-      //print('outgoing.once StasisEnd event:${stasisEndEvent.type}');
-      //print('outgoing.once StasisEnd channel:${channel.id}');
-      //outgoing.off();
       if (succeededCalls[incoming.id] == true) {
-        //print("Redirecting call");
         await incoming.continueInDialplan(
             context: 'call-rating', priority: 1, extension: 's');
 
-        //   //   if (dsbClient != null) {
         if (voiceRecords[incoming.id] != null) {
           voiceRecords[incoming.id]!.duration_number =
               stasisEndEvent.timestamp.toString();
 
           voiceRecords[incoming.id]!.hangupdate =
               stasisEndEvent.timestamp.toString();
-          //print("Sending recording details to the dashboar");
-          //await dsbClient!.send_call_records_to_db(voiceRecords[incoming.id]!);
-          await voiceRecords[incoming.id]!.insert_call_recording();
+          await voiceRecords[incoming.id]!.insertCallRecording();
           voiceRecords.remove(incoming.id);
         }
       }
@@ -270,40 +208,34 @@ Future<void> originate(Channel incoming) async {
         setTimeout(() {
           print("setting agent state: to idle");
           agent.status = AgentState.IDLE;
+          DbQueries.updateAgentStatus(
+              agent.endpoint, agent.state.toString(), agent.status.toString());
         }, 30000);
       } else {
-        agent.status = AgentState.IDLE;
+        // agent.status = AgentState.IDLE;
       }
     });
 
     await dialed.answer();
-    Channel externalChannel = await client.externalMedia(
-      (err, externalChannel) {
-        if (err) throw err;
-      },
-      app: 'hello',
-      variables: {'CALLERID(name)': 'recording', 'recording': 'yes'},
-      external_host: '$recorderIp:$rtpport',
-      format: 'alaw',
-    );
-    // //final mixingBridge = await bridge.create(type: ['mixing']);
-    await mixingBridge
-        .addChannel(channels: [incoming.id, dialed.id, externalChannel.id]);
+
+    if (rtpport != null) {
+      externalChannel = await client.externalMedia(
+        (err, externalChannel) {
+          if (err) throw err;
+        },
+        app: 'hello',
+        variables: {'CALLERID(name)': 'recording', 'recording': 'yes'},
+        external_host: '$recorderIp:$rtpport',
+        format: 'alaw',
+      );
+
+      // //final mixingBridge = await bridge.create(type: ['mixing']);
+      await mixingBridge
+          .addChannel(channels: [incoming.id, dialed.id, externalChannel.id]);
+    } else {
+      await mixingBridge.addChannel(channels: [incoming.id, dialed.id]);
+    }
   });
-
-  //Playback playback = client.playback();
-  //await incoming.play(playback, media: ['sound:vm-dialout']);
-
-  // Originate call from incoming channel to endpoint
-  // await outgoing.originate({
-  //     endpoint: ENDPOINT,
-  //     app: appName,
-  //     appArgs: 'dialed',
-  // });
-
-  if (agent.state == AgentState.UNKNOWN) {
-    agent.statistics.unknownStateCallsTried++;
-  }
 
   await dialed.originate(
       // endpoint: next_agent.number,

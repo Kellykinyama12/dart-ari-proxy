@@ -23,6 +23,7 @@ class Agent {
   AgentState? state; // = AgentState.UNKNOWN;
   AgentState? status; // = AgentState.UNKNOWN;
   Statistics statistics = Statistics();
+  String? pbxState;
   String? pbxStatus;
   bool databaseRefresh = true;
 

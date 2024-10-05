@@ -110,7 +110,7 @@ class CallRecording {
     };
   }
 
-  Future<void> insert_call_recording() async {
+  Future<void> insertCallRecording() async {
     final manager = Manager();
     manager.addConnection({
       'driver': 'mysql',

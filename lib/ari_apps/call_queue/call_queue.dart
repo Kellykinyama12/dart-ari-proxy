@@ -9,11 +9,9 @@ import 'package:dart_ari_proxy/globals.dart';
 import 'package:dotenv/dotenv.dart';
 import 'package:eloquent/eloquent.dart';
 import 'package:telnet/telnet.dart';
+import 'package:eventify/eventify.dart';
 
 HttpClient httpRtpClient = HttpClient();
-
-// String host = "10.1.8.222";
-// int port = 23;
 
 Timer? timer;
 bool sentTbagCmd = false;
@@ -22,6 +20,8 @@ String strReceivedData = "";
 bool receivedAgentsData = false;
 bool sentAgentStatus = false;
 bool receivedAgentStatus = false;
+
+bool _hasLogin = false;
 
 class CallCenterPerson {
   int id;
@@ -81,8 +81,6 @@ Future<dynamic> pbxCreds(
     print("error: $e");
   }
 }
-
-var _hasLogin = false;
 
 String? username;
 String? password;
@@ -169,25 +167,15 @@ void _onEvent(TelnetClient? client, TLMsgEvent event) {
       }
     } else if (!_hasLogin && event.msg is TLTextMsg) {
       final text = (event.msg as TLTextMsg).text.toLowerCase();
-      // if (text.contains("welcome")) {
-      //   _hasLogin = true;
-      //   print("[INFO] Login OK!");
       print("text before login: $text");
       if (text.contains("last login:")) {
-        //   // Write [password].
         print("Login successfull");
         _hasLogin = true;
-        //state = TELNET_STATE.LOGGED_IN;
-        //client!.write(TLTextMsg("mgr\r\n"));
       } else if (text.contains("login:")) {
-        //   // Write [username].
-        //print("Writing username: $username");
         setTimeout(() {
           client!.write(TLTextMsg("$username\r\n"));
         }, 1000);
       } else if (text.contains("password:")) {
-        //   // Write [password].
-        //print("Writing username: $password");
         setTimeout(() {
           client!.write(TLTextMsg("$password\r\n"));
         }, 1000);
@@ -200,26 +188,20 @@ void _onEvent(TelnetClient? client, TLMsgEvent event) {
       receivedTbagDataCount++;
 
       if (sentAgentStatus) {
-        //print("Agent status: $text");
         int index = text.indexOf("directory number    :");
         if (index != -1) {
           String agentNum = text.substring(index);
           index = agentNum.indexOf("|");
           agentNum = agentNum.substring(21, index);
-          //print("Agent num: $agentNum");
           callCenterPeople[agentNum.trim()]?.AgentStatus = text;
         }
       }
 
-      //if (sentTbagCmd) print("Received times: $receivedTbagDataCount");
       if (sentTbagCmd && !receivedAgentsData) {
         timer = setTimeout(() {
           receivedAgentsData = true;
 
-          //print("Receive agent data: $strReceivedData");
-
           final entries = text.split("\r");
-          //print("Receive agent data: $entries");
 
           entries.forEach((entry) {
             final fields = entry.split("|");
@@ -251,13 +233,13 @@ void _onEvent(TelnetClient? client, TLMsgEvent event) {
 
       if (!sentTbagCmd) {
         timer = setTimeout(() {
-          client!.write(TLTextMsg("tabag\r\n"));
+          client!.write(
+              TLTextMsg("tabag\r\n")); //Command to get the list of agents
           sentTbagCmd = true;
           receivedTbagDataCount++;
         }, 5000);
       }
       currentAgent ??= (String agentNum) {
-        //client!.write(TLTextMsg("$agentNum\r\n"));
         strReceivedData = "";
         timer = setTimeout(() {
           client!.write(TLTextMsg("agacd $agentNum\r\n"));
@@ -265,15 +247,6 @@ void _onEvent(TelnetClient? client, TLMsgEvent event) {
           receivedTbagDataCount++;
         }, 1000);
       };
-
-      // const oneSec = Duration(seconds: 4);
-      // Timer.periodic(oneSec, (Timer t) {
-      //   strReceivedData = "";
-      //   t.cancel();
-      //   if (currentAgent != null) {
-      //     client!.write(TLTextMsg("agacd $currentAgent\r\n"));
-      //   }
-      // });
     }
   }
 }
@@ -287,34 +260,11 @@ void _onDone(TelnetClient? client) {
 }
 
 Future<dynamic> agentsAPI(Uri uri) async {
-  // baseUrl.path = baseUrl.path + '/channels';
-
-  //10.100.54.137
-  // var uri = Uri(
-  //   scheme: "http",
-  //   userInfo: "",
-  //   // host: "zqa1.zesco.co.zm",
-  //   host: "localhost",
-  //   //port: 8080,
-  //   port: 8000,
-  //   path: "/api/agents",
-  //   //Iterable<String>? pathSegments,
-  //   //query: "",
-  //   //queryParameters: {'filename': filename}
-  //   //String? fragment
-  // );
-
-//HttpClientRequest request = await client.getUrl(uri);
-  //var uri = Uri.http(baseUrl, '/channels/${channelId}/answer', qParams);
   HttpClientRequest request = await httpRtpClient.getUrl(uri);
   HttpClientResponse response = await request.close();
   //print(response);
   final String stringData = await response.transform(utf8.decoder).join();
-  //print(stringData);
-  //print(response.statusCode);
-  // var port = jsonDecode(stringData); //print(stringData);
 
-  // return port['rtp_port'];
   return (stringData, response.statusCode, null);
 }
 
@@ -323,7 +273,7 @@ class CallQueue {
   Map<String, Agent> agentsLogged = {};
   late Ari ari_client;
 
-  CallQueue({Uri? uri, dynamic jsonData}) {
+  CallQueue({Uri? uri, dynamic jsonData, dynamic calls}) {
     agents.clear();
 
     if (uri != null) {
@@ -339,13 +289,27 @@ class CallQueue {
         });
       });
     } else {
+      calls = jsonDecode(calls);
+      print("Records runtime type: ${calls.runtimeType}");
+
       if (jsonData != null) {
         print("Initialising agent data from json");
         var agentsList = jsonDecode(jsonData);
         //loop through the list
         agentsList.forEach((agentEntry) {
           agents[agentEntry["endpoint"]] = Agent.fromJSON(agentEntry);
-          print("Create agent: ${agents[agentEntry["endpoint"]]}");
+
+          calls.forEach((e) {
+            if (e['agent_number']
+                .contains(agents[agentEntry["endpoint"]]!.endpoint)) {
+              print("record deaitl: ${e['agent_number']}");
+              agents[agentEntry["endpoint"]]!.statistics.answereCalls++;
+            }
+            // e.forEach((k, v) {
+            //   print("Entry: $v");
+            // });
+          });
+          // print("Create agent: ${agents[agentEntry["endpoint"]]}");
         });
         print("Agents available: ${agentsList.length}");
       }
@@ -354,7 +318,6 @@ class CallQueue {
 
   static Future<CallQueue> fromDB() async {
     final manager = Manager();
-//connect to the local db
     manager.addConnection({
       'driver': 'mysql',
       'host': asteriskDbHost,
@@ -362,111 +325,94 @@ class CallQueue {
       'database': asteriskDbName,
       'username': asteriskDbUsername,
       'password': asteriskDbPassword,
-      // 'pool': true,
-      // 'poolsize': 2,
     });
     manager.setAsGlobal();
     final db = await manager.connection();
-    var res = await db
-        .table('agents')
-//       .selectRaw('id,name,tel')
-//       .join('contacts', 'contacts.id_client', '=', 'clients.id')
-        .get();
+    var res = await db.table('agents').get();
+    var calls = await db.table('recordings').get();
+    var jsonCalls = jsonEncode(calls);
     final resp = jsonEncode(res);
     db.disconnect();
-    return CallQueue(jsonData: resp);
+    return CallQueue(jsonData: resp, calls: jsonCalls);
   }
-
-  // factory CallQueue.fromList(List<String> agent_nums) {
-  //   Map<String, Agent> agents = {};
-  //   agent_nums.forEach((numb) {
-  //     agents[numb] = Agent(numb);
-  //   });
-
-  //   return CallQueue(agent_numbs: agents);
-  // }
 
   fromAgentsAPI() {}
 
+  Agent? nextAgentV2() {
+    Agent? bestAgent;
+    const oneSec = Duration(seconds: 1);
+    Timer.periodic(oneSec, (Timer t) {});
+    return bestAgent;
+  }
+
   Agent? nextAgent() {
     Agent? bestAgent;
+
     agents.forEach((agent_num, agent) {
-      if (callCenterPeople[agent_num] != null) {
-        if (callCenterPeople[agent_num]!.AgentStatus != null) {
-          // print("Agent status: ${callCenterPeople[agent_num]!.AgentStatus}");
-          String staticText = callCenterPeople[agent_num]!.AgentStatus!;
-          String dyanmicText = callCenterPeople[agent_num]!.AgentStatus!;
-          String pg = callCenterPeople[agent_num]!.AgentStatus!;
-          int staticIndex = staticText.indexOf("static state  :");
+      var agentStatus = callCenterPeople[agent_num]?.AgentStatus;
+      if (agentStatus == null) return;
 
-          if (staticIndex != -1) {
-            String agentStatus = staticText.substring(staticIndex);
-            staticIndex = agentStatus.indexOf("|");
-            agentStatus = agentStatus.substring(15, staticIndex);
-            //print("Agent status: $agentNum");
-            agent.pbxStatus = agentStatus;
+      // Process agent static state
+      int staticIndex = agentStatus.indexOf("static state  :");
+      if (staticIndex == -1) return;
 
-            if (agent.pbxStatus!.trim() == "normal") {
-              //print("Agent status: ${agent.pbxStatus}");
-              // print(
-              //     "Agent state normal: ${callCenterPeople[agent_num]!.AgentStatus}");
+      String staticText = agentStatus.substring(staticIndex);
+      staticIndex = staticText.indexOf("|");
+      String staticState = staticText.substring(15, staticIndex).trim();
+      agent.pbxState = staticState;
 
-              int dynamicIndex = dyanmicText.indexOf("dynamic state :");
+      if (staticState != "normal") return;
 
-              if (dynamicIndex != -1) {
-                String agentDynamicStatus = dyanmicText.substring(dynamicIndex);
-                dynamicIndex = agentDynamicStatus.indexOf("|");
-                agentStatus = agentDynamicStatus.substring(15, dynamicIndex);
-                //print("Agent dynamic status: ${agentDynamicStatus}");
-                agent.pbxStatus = agentDynamicStatus;
+      // Process agent dynamic state
+      int dynamicIndex = agentStatus.indexOf("dynamic state :");
+      if (dynamicIndex == -1) return;
 
-                if (agentStatus.trim() == "free") {
-                  // print("Agent status: ${agent.pbxStatus}");
-                  "prefer pg dir nb :          8800";
-                  int pgIndex = pg.indexOf("prefer pg dir nb :");
-                  if (pgIndex != -1) {
-                    String pgSubString = pg.substring(pgIndex);
-                    pgIndex = pgSubString.indexOf("|");
-                    pgSubString = pgSubString.substring(18, pgIndex);
-                    print("Processing group: $pgSubString");
+      String dynamicText = agentStatus.substring(dynamicIndex);
+      dynamicIndex = dynamicText.indexOf("|");
+      String dynamicState = dynamicText.substring(15, dynamicIndex).trim();
+      agent.pbxStatus = dynamicState;
 
-                    if (pgSubString.trim() == "8800") {
-//                       var res = await db
-//                           .table('recordings')
-//                           .where('dst', '=', agent.endpoint)
-// //       .selectRaw('id,name,tel')
-// //       .join('contacts', 'contacts.id_client', '=', 'clients.id')
-//                           .get();
-//                       final resp = jsonEncode(res);
-//                       //print("Calls: ${resp}");
-//                       agent.statistics.answereCalls = resp.length;
+      if (dynamicState != "free") return;
 
-                      agent.state = AgentState.LOGGEDIN;
-                      agent.status = AgentState.IDLE;
-                      if (bestAgent == null)
-                        bestAgent = agent;
-                      else {
-                        if (bestAgent!.statistics.answereCalls >=
-                            agent.statistics.answereCalls) {
-                          bestAgent = agent;
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+      // Process agent process group
+      int pgIndex = agentStatus.indexOf("prefer pg dir nb :");
+      if (pgIndex == -1) return;
+
+      String pgText = agentStatus.substring(pgIndex);
+      pgIndex = pgText.indexOf("|");
+      String processGroup = pgText.substring(18, pgIndex).trim();
+      print("Processing group: $processGroup");
+
+      if (processGroup != "8800") return;
+
+      agent.state = AgentState.LOGGEDIN;
+      agent.status = AgentState.IDLE;
+
+      // Determine the best agent based on statistics
+      if (bestAgent == null) {
+        bestAgent = agent;
+      } else {
+// check if best agent is idle, is
+        if ((bestAgent!.pbxState == "normal") &&
+            (bestAgent!.pbxStatus == "free")) {
+          if (bestAgent!.statistics.answereCalls >
+              agent.statistics.answereCalls) {
+            bestAgent = agent;
+          } else if (bestAgent!.statistics.unknownStateCallsTried >
+              agent.statistics.unknownStateCallsTried) {
+            bestAgent = agent;
           }
+        } else {
+          bestAgent = agent;
         }
-
-        "dynamic state :     ext acd conv |";
       }
-      //await db.disconnect();
-      //print("agent: $agent");
+
+      if (currentAgent != null && bestAgent != null) {
+        setTimeout(() {
+          currentAgent!(bestAgent!.endpoint);
+        }, 2000);
+      }
     });
-    if (currentAgent != null && bestAgent != null) {
-      currentAgent!(bestAgent!.endpoint);
-    }
 
     return bestAgent;
   }
@@ -479,6 +425,12 @@ class CallQueue {
     String path = env['PBX_CREDS_PATH']!;
     String apiKey = env['PBX_CREDS_API_KEY']!;
     await pbxCreds(host, port, path, apiKey);
+
+    setTimeout(() {
+      if (!_hasLogin) {
+        throw "PBX connection failed";
+      }
+    }, 20000);
 
 //login into the pbx
     if (username != null) {
