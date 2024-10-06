@@ -11,6 +11,16 @@ import 'package:eloquent/eloquent.dart';
 import 'package:telnet/telnet.dart';
 import 'package:eventify/eventify.dart';
 
+class AcdCall {
+  String incomingChannel;
+
+  Map<String, Agent> freeAgents = {};
+
+  Agent? bestAgent;
+
+  AcdCall(this.incomingChannel);
+}
+
 HttpClient httpRtpClient = HttpClient();
 
 Timer? timer;
@@ -192,8 +202,11 @@ void _onEvent(TelnetClient? client, TLMsgEvent event) {
         if (index != -1) {
           String agentNum = text.substring(index);
           index = agentNum.indexOf("|");
-          agentNum = agentNum.substring(21, index);
-          callCenterPeople[agentNum.trim()]?.AgentStatus = text;
+          agentNum = agentNum.substring(21, index).trim();
+          callCenterPeople[agentNum]?.AgentStatus = text;
+          //print("Emmiting agent status for: $agentNum");
+
+          events.emit('message', text);
         }
       }
 
@@ -273,6 +286,8 @@ class CallQueue {
   Map<String, Agent> agentsLogged = {};
   late Ari ari_client;
 
+  Map<String, AcdCall> incomingAcdToAgents = {};
+
   CallQueue({Uri? uri, dynamic jsonData, dynamic calls}) {
     agents.clear();
 
@@ -336,85 +351,166 @@ class CallQueue {
     return CallQueue(jsonData: resp, calls: jsonCalls);
   }
 
-  fromAgentsAPI() {}
+//   Agent getAgentWithLongestWaitingDuration() {
+//   if (agents.isEmpty) {
+//     throw ArgumentError('The agents list cannot be empty.');
+//   }
 
-  Agent? nextAgentV2() {
-    Agent? bestAgent;
-    const oneSec = Duration(seconds: 1);
-    Timer.periodic(oneSec, (Timer t) {});
-    return bestAgent;
-  }
+//   Agent longestWaitingAgent = agents;
+//   Duration longestDuration = DateTime.now().difference(longestWaitingAgent.waitingSince);
 
-  Agent? nextAgent() {
-    Agent? bestAgent;
+//   for (Agent agent in agents) {
+//     Duration currentDuration = DateTime.now().difference(agent.waitingSince);
+//     if (currentDuration > longestDuration) {
+//       longestDuration = currentDuration;
+//       longestWaitingAgent = agent;
+//     }
+//   }
 
-    agents.forEach((agent_num, agent) {
-      var agentStatus = callCenterPeople[agent_num]?.AgentStatus;
-      if (agentStatus == null) return;
+//   return longestWaitingAgent;
+// }
+
+  Agent? processAgentStatus(String text, String incomingChannel) {
+    int index = text.indexOf("directory number    :");
+    if (index != -1) {
+      String agentNum = text.substring(index);
+      index = agentNum.indexOf("|");
+      agentNum = agentNum.substring(21, index).trim();
+      callCenterPeople[agentNum]?.AgentStatus = text;
+      //print("Emmiting agent status for: $agentNum");
 
       // Process agent static state
-      int staticIndex = agentStatus.indexOf("static state  :");
-      if (staticIndex == -1) return;
+      int staticIndex = text.indexOf("static state  :");
+      if (staticIndex == -1) return null;
 
-      String staticText = agentStatus.substring(staticIndex);
+      String staticText = text.substring(staticIndex);
       staticIndex = staticText.indexOf("|");
       String staticState = staticText.substring(15, staticIndex).trim();
-      agent.pbxState = staticState;
+      // agent.pbxState = staticState;
 
-      if (staticState != "normal") return;
+      if (staticState != "normal") return null;
 
       // Process agent dynamic state
-      int dynamicIndex = agentStatus.indexOf("dynamic state :");
-      if (dynamicIndex == -1) return;
+      int dynamicIndex = text.indexOf("dynamic state :");
+      if (dynamicIndex == -1) return null;
 
-      String dynamicText = agentStatus.substring(dynamicIndex);
+      String dynamicText = text.substring(dynamicIndex);
       dynamicIndex = dynamicText.indexOf("|");
       String dynamicState = dynamicText.substring(15, dynamicIndex).trim();
-      agent.pbxStatus = dynamicState;
+      //agent.pbxStatus = dynamicState;
 
-      if (dynamicState != "free") return;
+      if (dynamicState != "free") return null;
 
       // Process agent process group
-      int pgIndex = agentStatus.indexOf("prefer pg dir nb :");
-      if (pgIndex == -1) return;
+      int pgIndex = text.indexOf("prefer pg dir nb :");
+      // if (pgIndex == -1) return;
 
-      String pgText = agentStatus.substring(pgIndex);
+      String pgText = text.substring(pgIndex);
       pgIndex = pgText.indexOf("|");
       String processGroup = pgText.substring(18, pgIndex).trim();
-      print("Processing group: $processGroup");
+      //print("Processing group: $processGroup");
 
-      if (processGroup != "8800") return;
+      if (processGroup != "8800") return null;
 
-      agent.state = AgentState.LOGGEDIN;
-      agent.status = AgentState.IDLE;
-
-      // Determine the best agent based on statistics
-      if (bestAgent == null) {
-        bestAgent = agent;
-      } else {
-// check if best agent is idle, is
-        if ((bestAgent!.pbxState == "normal") &&
-            (bestAgent!.pbxStatus == "free")) {
-          if (bestAgent!.statistics.answereCalls >
-              agent.statistics.answereCalls) {
-            bestAgent = agent;
-          } else if (bestAgent!.statistics.unknownStateCallsTried >
-              agent.statistics.unknownStateCallsTried) {
-            bestAgent = agent;
-          }
-        } else {
-          bestAgent = agent;
-        }
+      //bestAgent ??= agents[agentNum];
+      //if (incomingToAgents[incomingChannel] == null) {
+      if (agents[agentNum] != null) {
+        print(" agent status for: $agentNum, is : $dynamicState");
+        incomingAcdToAgents[incomingChannel]!.freeAgents[agentNum] =
+            agents[agentNum]!;
+        //incomingToAgents[incomingChannel] = agents[agentNum]!;
+        // freeAgents[agentNum] = agents[agentNum]!;
       }
+      // } else {
+      //   if (agents[agentNum] != null) {
+      //     Duration agent1currentDuration =
+      //         DateTime.now().difference(agents[agentNum]!.waitingSince!);
+      //     Duration agent2currentDuration = DateTime.now()
+      //         .difference(incomingToAgents[incomingChannel]!.waitingSince!);
 
-      if (currentAgent != null && bestAgent != null) {
-        setTimeout(() {
-          currentAgent!(bestAgent!.endpoint);
-        }, 2000);
+      //     //            if (currentDuration > longestDuration) {
+      //     //   longestDuration = currentDuration;
+      //     //   longestWaitingAgent = agent;
+      //     // }
+
+      //     print(" agent status for: $agentNum, is : $text");
+
+      //     incomingToAgents[incomingChannel] = agents[agentNum]!;
+      //   }
+      // }
+    }
+  }
+
+  Agent getAgentWithLongestWaitingDuration(List<Agent> agents) {
+    if (agents.isEmpty) {
+      throw ArgumentError('The agents list cannot be empty.');
+    }
+
+    Agent longestWaitingAgent = agents.first;
+    Duration longestDuration =
+        DateTime.now().difference(longestWaitingAgent.waitingSince);
+
+    for (Agent agent in agents) {
+      Duration currentDuration = DateTime.now().difference(agent.waitingSince);
+      if (currentDuration > longestDuration) {
+        longestDuration = currentDuration;
+        longestWaitingAgent = agent;
       }
+    }
+
+    return longestWaitingAgent;
+  }
+
+  Future<Agent> nextAgentV2(String incomingChannel) async {
+    incomingAcdToAgents[incomingChannel] = AcdCall(incomingChannel);
+
+    events.on('message', (String data) async {
+      //print('String: $data');
+      processAgentStatus(data, incomingChannel);
     });
 
-    return bestAgent;
+    List<String> keys = callQueue.agents.keys.toList();
+
+    return await getBestAgent(keys, keys[0], incomingChannel);
+  }
+
+  Future<Agent> getBestAgent(
+      List<String> keys, String currentKey, String incomingChannel) async {
+    final completer = Completer<Agent>();
+    print("Getting best agent $currentKey");
+    int currentIndex = keys.indexOf(currentKey);
+
+    if (currentIndex == -1) {
+      throw ArgumentError('The provided key does not exist in the map.');
+    }
+
+    int nextIndex = (currentIndex + 1) % keys.length;
+
+    String nextKey = keys[nextIndex];
+
+    Agent currAgent = agents[nextKey]!;
+
+    if (incomingAcdToAgents[incomingChannel]!.bestAgent == null &&
+        incomingAcdToAgents[incomingChannel]!.freeAgents.isEmpty) {
+      if (currentAgent != null) {
+        currentAgent!(currAgent.endpoint);
+      } else {
+        throw "CurrentAgent function cannot be null";
+      }
+      await Future.delayed(Duration(milliseconds: 1000));
+
+      return getBestAgent(keys, nextKey, incomingChannel);
+    } else {
+      List<Agent> keyValueList = [];
+      incomingAcdToAgents[incomingChannel]!
+          .freeAgents
+          .forEach((k, v) => keyValueList.add(v));
+      incomingAcdToAgents[incomingChannel]!.bestAgent =
+          getAgentWithLongestWaitingDuration(keyValueList);
+      Agent bestAgent = incomingAcdToAgents[incomingChannel]!.bestAgent!;
+      completer.complete(bestAgent);
+    }
+    return completer.future;
   }
 
   Future<void> pbxAgentData(String pbxHost, int pbxPort) async {

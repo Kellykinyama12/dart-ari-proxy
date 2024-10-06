@@ -79,7 +79,8 @@ Future<void> originate(Channel incoming) async {
   Uuid uid = Uuid();
   String filename = uid.v1();
 
-  Agent? agent = callQueue.nextAgent();
+  Agent? agent = await callQueue.nextAgentV2(incoming.id);
+
   agent?.statistics.unknownStateCallsTried++;
   print("Agent enpoint: ${agent?.endpoint}");
   print("Agent state: ${agent?.state}");
@@ -198,6 +199,7 @@ Future<void> originate(Channel incoming) async {
           voiceRecords[incoming.id]!.hangupdate =
               stasisEndEvent.timestamp.toString();
           await voiceRecords[incoming.id]!.insertCallRecording();
+          agent.waitingSince = DateTime.now();
           voiceRecords.remove(incoming.id);
         }
       }
