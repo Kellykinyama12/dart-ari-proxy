@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -18,7 +19,11 @@ class AcdCall {
 
   Agent? bestAgent;
 
-  AcdCall(this.incomingChannel);
+  AcdCall(this.incomingChannel, {Map<String, Agent>? loggedIn}) {
+    loggedIn?.forEach((key, value) {
+      freeAgents[key] = value;
+    });
+  }
 }
 
 HttpClient httpRtpClient = HttpClient();
@@ -283,7 +288,7 @@ Future<dynamic> agentsAPI(Uri uri) async {
 
 class CallQueue {
   Map<String, Agent> agents = {};
-  Map<String, Agent> agentsLogged = {};
+  Map<String, Agent> agentsAnswered = {};
   late Ari ari_client;
 
   Map<String, AcdCall> incomingAcdToAgents = {};
@@ -421,7 +426,7 @@ class CallQueue {
         incomingAcdToAgents[incomingChannel]!.freeAgents[agentNum] =
             agents[agentNum]!;
 
-        freeAgentsMap[incomingChannel] = agents[agentNum]!;
+        freeAgentsMap[agentNum] = agents[agentNum]!;
         //incomingToAgents[incomingChannel] = agents[agentNum]!;
         // freeAgents[agentNum] = agents[agentNum]!;
       }
@@ -466,7 +471,8 @@ class CallQueue {
   }
 
   Future<Agent> nextAgentV2(String incomingChannel) async {
-    incomingAcdToAgents[incomingChannel] = AcdCall(incomingChannel);
+    incomingAcdToAgents[incomingChannel] =
+        AcdCall(incomingChannel, loggedIn: agentsAnswered);
 
     events.on('message', (String data) async {
       //print('String: $data');
@@ -474,10 +480,20 @@ class CallQueue {
     });
 
     List<String> priorityKeys = freeAgentsMap.keys.toList();
-
     List<String> keys = callQueue.agents.keys.toList();
+    List<String> answereKeys = callQueue.agentsAnswered.keys.toList();
 
-    return await getBestAgent(keys, keys[0], incomingChannel);
+// Create a LinkedHashSet to maintain the order and remove duplicates
+    Set<String> combinedSet = LinkedHashSet<String>()
+      ..addAll(priorityKeys)
+      ..addAll(answereKeys)
+      ..addAll(keys);
+
+    List<String> combinedList = combinedSet.toList();
+
+    print("Agent list: $combinedList");
+
+    return await getBestAgent(combinedList, combinedList[0], incomingChannel);
   }
 
   Future<Agent> getBestAgent(

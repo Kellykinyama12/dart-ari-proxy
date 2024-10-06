@@ -81,6 +81,8 @@ Future<void> originate(Channel incoming) async {
 
   Agent? agent = await callQueue.nextAgentV2(incoming.id);
 
+  callQueue.agentsAnswered[agent.endpoint] = agent;
+
   agent?.statistics.unknownStateCallsTried++;
   print("Agent enpoint: ${agent?.endpoint}");
   print("Agent state: ${agent?.state}");
@@ -149,7 +151,7 @@ Future<void> originate(Channel incoming) async {
       DbQueries.updateAgentStatus(
           agent.endpoint, agent.state.toString(), agent.status.toString());
 
-      callQueue.agentsLogged[agent.endpoint] = agent;
+      //callQueue.agentsLogged[agent.endpoint] = agent;
       agent.statistics.receivedCalls++;
 
       if (callTimers[incoming.id] != null) {
