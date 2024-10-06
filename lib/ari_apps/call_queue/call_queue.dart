@@ -288,6 +288,8 @@ class CallQueue {
 
   Map<String, AcdCall> incomingAcdToAgents = {};
 
+  Map<String, Agent> freeAgentsMap = {};
+
   CallQueue({Uri? uri, dynamic jsonData, dynamic calls}) {
     agents.clear();
 
@@ -418,6 +420,8 @@ class CallQueue {
         print(" agent status for: $agentNum, is : $dynamicState");
         incomingAcdToAgents[incomingChannel]!.freeAgents[agentNum] =
             agents[agentNum]!;
+
+        freeAgentsMap[incomingChannel] = agents[agentNum]!;
         //incomingToAgents[incomingChannel] = agents[agentNum]!;
         // freeAgents[agentNum] = agents[agentNum]!;
       }
@@ -468,6 +472,8 @@ class CallQueue {
       //print('String: $data');
       processAgentStatus(data, incomingChannel);
     });
+
+    List<String> priorityKeys = freeAgentsMap.keys.toList();
 
     List<String> keys = callQueue.agents.keys.toList();
 
