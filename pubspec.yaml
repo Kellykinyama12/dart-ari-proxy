@@ -12,7 +12,6 @@ dependencies:
   eloquent: ^3.2.1
   eventify: ^1.0.1
   events_emitter: ^0.5.2
-  get_storage: ^2.1.1
   redis: ^4.0.0
   telnet: ^1.0.7
   uuid: ^4.3.3
