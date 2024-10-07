@@ -31,9 +31,21 @@ void main(List<String> arguments) async {
   String pbxHost = env['PBX_HOST']!;
   int pbxPort = int.parse(env['PBX_PORT']!);
 
-//Get a list of agents from local DB
+  String host = env['PBX_CREDS_HOST']!;
+  int port = int.parse(env['PBX_CREDS_PORT']!);
+  String path = env['PBX_CREDS_PATH']!;
+  String apiKey = env['PBX_CREDS_API_KEY']!;
+
+  //Get a list of agents from local DB
   callQueue = await CallQueue.fromDB();
+
+  await callQueue.pbxCreds(host, port, path, apiKey);
+
+// Get details of agent data from the PBX
   await callQueue.pbxAgentData(pbxHost, pbxPort);
 
+// Start processing calls
   call_center_bridge(arguments);
+
+  await callQueue.waitForLoggedInAgent();
 }

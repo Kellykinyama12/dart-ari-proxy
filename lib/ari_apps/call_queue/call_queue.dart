@@ -62,41 +62,6 @@ class CallCenterPerson {
 
 Map<String, CallCenterPerson> callCenterPeople = {};
 
-Future<dynamic> pbxCreds(
-    String host, int port, String path, String apiKey) async {
-  // baseUrl.path = baseUrl.path + '/channels';
-
-  HttpClient client = HttpClient();
-  var uri = Uri(
-      scheme: "http",
-      userInfo: "",
-      host: host,
-      port: port,
-      path: path,
-      query: "",
-      queryParameters: {'api_key': api_key}
-      //String? fragment
-      );
-  //var uri = Uri.http(baseUrl);
-  try {
-    HttpClientRequest request = await client.getUrl(uri);
-    request.headers.add(HttpHeaders.authorizationHeader, 'Bearer $apiKey');
-
-    //request.headers.set(name, value);
-    HttpClientResponse response = await request.close();
-    //print(response);
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print(stringData);
-    final creds = jsonDecode(stringData);
-    username = creds["username"];
-    password = creds["password"];
-    return (statusCode: response.statusCode, resp: stringData);
-  } catch (e) {
-    print("error: $e");
-  }
-}
-
 String? username;
 String? password;
 
@@ -274,6 +239,7 @@ void _onError(TelnetClient? client, dynamic error) {
 }
 
 void _onDone(TelnetClient? client) {
+  _hasLogin = false;
   print("[DONE]");
 }
 
@@ -289,6 +255,7 @@ Future<dynamic> agentsAPI(Uri uri) async {
 class CallQueue {
   Map<String, Agent> agents = {};
   Map<String, Agent> agentsAnswered = {};
+  Map<String, Agent> agentsLoggedIn = {};
   late Ari ari_client;
 
   Map<String, AcdCall> incomingAcdToAgents = {};
@@ -395,7 +362,10 @@ class CallQueue {
       String staticState = staticText.substring(15, staticIndex).trim();
       // agent.pbxState = staticState;
 
-      if (staticState != "normal") return null;
+      if (staticState != "normal") {
+        agentsLoggedIn.remove(agentNum);
+        return null;
+      }
 
       // Process agent dynamic state
       int dynamicIndex = text.indexOf("dynamic state :");
@@ -417,7 +387,13 @@ class CallQueue {
       String processGroup = pgText.substring(18, pgIndex).trim();
       //print("Processing group: $processGroup");
 
-      if (processGroup != "8800") return null;
+      if (processGroup != "8800") {
+        agentsLoggedIn.remove(agentNum);
+        return null;
+      }
+      if (agents[agentNum] != null) {
+        agentsLoggedIn[agentNum] = agents[agentNum]!;
+      }
 
       //bestAgent ??= agents[agentNum];
       //if (incomingToAgents[incomingChannel] == null) {
@@ -470,9 +446,95 @@ class CallQueue {
     return longestWaitingAgent;
   }
 
+  void getLoggedInAgents() {
+    events.on('message', (String data) {
+      //print('String: $data');
+      int index = data.indexOf("directory number    :");
+      if (index != -1) {
+        String agentNum = data.substring(index);
+        index = agentNum.indexOf("|");
+        agentNum = agentNum.substring(21, index).trim();
+        callCenterPeople[agentNum]?.AgentStatus = data;
+        //print("Emmiting agent status for: $agentNum");
+      }
+    });
+    print("Getting logged in agent list");
+    if (currentAgent != null) {
+      agents.forEach((agent_num, agent) {
+        if (agentsLoggedIn[agent_num] == null) {
+          setTimeout(() {
+            currentAgent!(agent_num);
+          }, 300);
+        }
+      });
+    }
+
+    callCenterPeople.forEach((agent_num, agent) {
+      if (agent.AgentStatus == null) return;
+      String text = agent.AgentStatus!;
+      int index = text.indexOf("directory number    :");
+      if (index != -1) {
+        String agentNum = text.substring(index);
+        index = agentNum.indexOf("|");
+        agentNum = agentNum.substring(21, index).trim();
+        callCenterPeople[agentNum]?.AgentStatus = text;
+        //print("Emmiting agent status for: $agentNum");
+
+        // Process agent static state
+        int staticIndex = text.indexOf("static state  :");
+        if (staticIndex == -1) return null;
+
+        String staticText = text.substring(staticIndex);
+        staticIndex = staticText.indexOf("|");
+        String staticState = staticText.substring(15, staticIndex).trim();
+        // agent.pbxState = staticState;
+
+        if (staticState != "normal") {
+          return;
+        }
+
+        // Process agent process group
+        int pgIndex = text.indexOf("prefer pg dir nb :");
+        // if (pgIndex == -1) return;
+
+        String pgText = text.substring(pgIndex);
+        pgIndex = pgText.indexOf("|");
+        String processGroup = pgText.substring(18, pgIndex).trim();
+        //print("Processing group: $processGroup");
+
+        if (processGroup != "8800") {
+          return;
+        }
+        if (agents[agentNum] != null) {
+          agentsLoggedIn[agentNum] = agents[agentNum]!;
+        }
+
+        //bestAgent ??= agents[agentNum];
+        //if (incomingToAgents[incomingChannel] == null) {
+
+        // } else {
+        //   if (agents[agentNum] != null) {
+        //     Duration agent1currentDuration =
+        //         DateTime.now().difference(agents[agentNum]!.waitingSince!);
+        //     Duration agent2currentDuration = DateTime.now()
+        //         .difference(incomingToAgents[incomingChannel]!.waitingSince!);
+
+        //     //            if (currentDuration > longestDuration) {
+        //     //   longestDuration = currentDuration;
+        //     //   longestWaitingAgent = agent;
+        //     // }
+
+        //     print(" agent status for: $agentNum, is : $text");
+
+        //     incomingToAgents[incomingChannel] = agents[agentNum]!;
+        //   }
+        // }
+      }
+    });
+  }
+
   Future<Agent> nextAgentV2(String incomingChannel) async {
-    incomingAcdToAgents[incomingChannel] =
-        AcdCall(incomingChannel, loggedIn: agentsAnswered);
+    incomingAcdToAgents[incomingChannel] = AcdCall(incomingChannel);
 
     events.on('message', (String data) async {
       //print('String: $data');
@@ -480,18 +542,20 @@ class CallQueue {
     });
 
     List<String> priorityKeys = freeAgentsMap.keys.toList();
-    List<String> keys = callQueue.agents.keys.toList();
+    //List<String> keys = callQueue.agents.keys.toList();
     List<String> answereKeys = callQueue.agentsAnswered.keys.toList();
+    List<String> loggedInKeys = agentsLoggedIn.keys.toList();
 
 // Create a LinkedHashSet to maintain the order and remove duplicates
+
     Set<String> combinedSet = LinkedHashSet<String>()
+      ..addAll(loggedInKeys)
       ..addAll(priorityKeys)
-      ..addAll(answereKeys)
-      ..addAll(keys);
+      ..addAll(answereKeys);
 
     List<String> combinedList = combinedSet.toList();
 
-    print("Agent list: $combinedList");
+    print("Agent list: $loggedInKeys");
 
     return await getBestAgent(combinedList, combinedList[0], incomingChannel);
   }
@@ -535,24 +599,76 @@ class CallQueue {
     return completer.future;
   }
 
-  Future<void> pbxAgentData(String pbxHost, int pbxPort) async {
+  Future<bool> waitForLoggedInAgent() async {
+    print("Getting looged in agents...");
+    final completer = Completer<bool>();
+    getLoggedInAgents();
+
+    if (agentsLoggedIn.isEmpty || agentsLoggedIn.length < 25) {
+      await Future.delayed(Duration(milliseconds: 10000));
+
+      print("Logged in list: ${agentsLoggedIn.keys.toList()}");
+
+      return waitForLoggedInAgent();
+    } else {
+      print("Logged in agents: ${agentsLoggedIn.keys.toList()}");
+      completer.complete(true);
+    }
+
+    return false;
+  }
+
+  Future<dynamic> pbxCreds(
+      String host, int port, String path, String apiKey) async {
+    // baseUrl.path = baseUrl.path + '/channels';
+
+    HttpClient client = HttpClient();
+    var uri = Uri(
+        scheme: "http",
+        userInfo: "",
+        host: host,
+        port: port,
+        path: path,
+        query: "",
+        queryParameters: {'api_key': api_key}
+        //String? fragment
+        );
+    //var uri = Uri.http(baseUrl);
+    try {
+      HttpClientRequest request = await client.getUrl(uri);
+      request.headers.add(HttpHeaders.authorizationHeader, 'Bearer $apiKey');
+
+      //request.headers.set(name, value);
+      HttpClientResponse response = await request.close();
+      //print(response);
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print(stringData);
+      final creds = jsonDecode(stringData);
+      username = creds["username"];
+      password = creds["password"];
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (e) {
+      print("error: $e");
+    }
+  }
+
+  Future<bool> pbxAgentData(String pbxHost, int pbxPort) async {
     var env = DotEnv(includePlatformEnvironment: true)..load();
     //declare and initialise pbx settings
     String host = env['PBX_CREDS_HOST']!;
     int port = int.parse(env['PBX_CREDS_PORT']!);
     String path = env['PBX_CREDS_PATH']!;
     String apiKey = env['PBX_CREDS_API_KEY']!;
-    await pbxCreds(host, port, path, apiKey);
 
-    setTimeout(() {
-      if (!_hasLogin) {
-        throw "PBX connection failed";
-      }
-    }, 20000);
+    ITelnetClient? client;
+
+    late ITLConnectionTask task;
+    //await pbxCreds(host, port, path, apiKey);
 
 //login into the pbx
     if (username != null) {
-      final task = TelnetClient.startConnect(
+      task = TelnetClient.startConnect(
         host: pbxHost,
         port: pbxPort,
         onEvent: _onEvent,
@@ -564,7 +680,7 @@ class CallQueue {
       await task.waitDone();
 
       // / Get the `TelnetClient` instance. It will be `null` if connect failed.
-      final client = task.client;
+      client = task.client;
       if (client == null) {
         throw ("Fail to connect to $pbxHost:$pbxPort");
       } else {
@@ -573,6 +689,25 @@ class CallQueue {
     } else {
       throw "PBX credentials cannot be null. make sure they are available";
     }
+
+    setTimeout(() {
+      if (!_hasLogin) {
+        throw "PBX connection failed";
+      }
+    }, 20000);
+
+    // final completer = Completer<bool>();
+
+    // if (!_hasLogin) {
+    //   await Future.delayed(Duration(milliseconds: 30000));
+
+    //   await client.terminate();
+
+    //   return pbxAgentData(pbxHost, pbxPort);
+    // } else {
+    //   completer.complete(true);
+    // }
+    return false;
   }
 }
 
