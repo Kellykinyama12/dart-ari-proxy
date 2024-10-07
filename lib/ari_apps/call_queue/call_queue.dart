@@ -19,11 +19,7 @@ class AcdCall {
 
   Agent? bestAgent;
 
-  AcdCall(this.incomingChannel, {Map<String, Agent>? loggedIn}) {
-    loggedIn?.forEach((key, value) {
-      freeAgents[key] = value;
-    });
-  }
+  AcdCall(this.incomingChannel) {}
 }
 
 HttpClient httpRtpClient = HttpClient();
@@ -379,7 +375,8 @@ class CallQueue {
       if (dynamicState != "free") return null;
 
       // Process agent process group
-      int pgIndex = text.indexOf("prefer pg dir nb :");
+      int pgIndex = text.indexOf("affect pg dir nb :");
+      "affect pg dir nb :          8800";
       // if (pgIndex == -1) return;
 
       String pgText = text.substring(pgIndex);
@@ -398,7 +395,7 @@ class CallQueue {
       //bestAgent ??= agents[agentNum];
       //if (incomingToAgents[incomingChannel] == null) {
       if (agents[agentNum] != null) {
-        print(" agent status for: $agentNum, is : $dynamicState");
+        //print(" agent status for: $agentNum, is : $dynamicState");
         incomingAcdToAgents[incomingChannel]!.freeAgents[agentNum] =
             agents[agentNum]!;
 
@@ -458,7 +455,7 @@ class CallQueue {
         //print("Emmiting agent status for: $agentNum");
       }
     });
-    print("Getting logged in agent list");
+    //print("Getting logged in agent list");
     if (currentAgent != null) {
       agents.forEach((agent_num, agent) {
         if (agentsLoggedIn[agent_num] == null) {
@@ -494,7 +491,7 @@ class CallQueue {
         }
 
         // Process agent process group
-        int pgIndex = text.indexOf("prefer pg dir nb :");
+        int pgIndex = text.indexOf("affect pg dir nb :");
         // if (pgIndex == -1) return;
 
         String pgText = text.substring(pgIndex);
@@ -600,7 +597,7 @@ class CallQueue {
   }
 
   Future<bool> waitForLoggedInAgent() async {
-    print("Getting looged in agents...");
+    // print("Getting looged in agents...");
     final completer = Completer<bool>();
     getLoggedInAgents();
 
