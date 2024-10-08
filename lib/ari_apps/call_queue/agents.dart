@@ -27,6 +27,7 @@ class Agent {
   String? pbxStatus;
   bool databaseRefresh = true;
   DateTime waitingSince = DateTime.now();
+  String? lastDateCall;
 
   Agent(this.endpoint,
       {this.name, this.state, this.status, this.number, this.setNumber}) {}

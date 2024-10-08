@@ -59,16 +59,18 @@ void main(List<String> args) async {
   // print(resp);
 //   //res: [{id: 1, name: Isaque update, tel: 27772339}, {id: 2, name: John Doe, tel: 99705498}]
 
-  await db.table('recordings').insert({
-    "agent_number": "",
-    "phone_number": "",
-    "duration_number": "",
-    "file_name": "",
-    "file_path": "",
-    //"transcription": "",
-    "created_at": DateTime.now().toString(),
-    "updated_at": DateTime.now().toString(),
-  });
+  // await db.table('recordings').insert({
+  //   "agent_number": "",
+  //   "phone_number": "",
+  //   "duration_number": "",
+  //   "file_name": "",
+  //   "file_path": "",
+  //   //"transcription": "",
+  //   "created_at": DateTime.now().toString(),
+  //   "updated_at": DateTime.now().toString(),
+  // });
+
+  //await db.table('recordings').groupBy(column)
 
   await db.disconnect();
 

@@ -119,6 +119,7 @@ Future<void> originate(Channel incoming) async {
         //agent.status = AgentState.IDLE;
       }, 30000);
     } else {}
+    // callQueue.incomingAcdToAgents.remove(incoming.id);
   });
 
   dialed.on('ChannelStateChange', (event) {
