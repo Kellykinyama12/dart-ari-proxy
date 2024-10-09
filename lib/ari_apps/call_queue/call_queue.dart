@@ -527,7 +527,10 @@ class CallQueue {
 
       String staticText = text.substring(staticIndex);
       staticIndex = staticText.indexOf("|");
+      if (staticIndex != -1) return "";
+
       String staticState = staticText.substring(15, staticIndex).trim();
+      print("processing agent status: $staticState");
       // agent.pbxState = staticState;
 
       if (staticState != "normal") {
@@ -779,7 +782,7 @@ class CallQueue {
 
     List<String> combinedList = combinedSet.toList();
 
-    print("Agent list: $loggedInKeys");
+    //print("Agent list: $loggedInKeys");
     if (combinedList.isEmpty) return null;
 
     return await getBestAgent(combinedList, combinedList[0], incomingChannel);
@@ -788,7 +791,7 @@ class CallQueue {
   Future<Agent> getBestAgent(
       List<String> keys, String currentKey, String incomingChannel) async {
     final completer = Completer<Agent>();
-    print("Getting best agent $currentKey");
+    //print("Getting best agent $currentKey");
     int currentIndex = keys.indexOf(currentKey);
 
     if (currentIndex == -1) {
