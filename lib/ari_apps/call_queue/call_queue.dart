@@ -25,7 +25,7 @@ class AcdCall {
 
 HttpClient httpRtpClient = HttpClient();
 
-Timer? timer;
+Timer? sendTabagCmd;
 bool sentTbagCmd = false;
 int receivedTbagDataCount = 0;
 String strReceivedData = "";
@@ -171,88 +171,185 @@ void _onEvent(TelnetClient? client, TLMsgEvent event) {
     }
     if (_hasLogin && event.msg is TLTextMsg) {
       final text = (event.msg as TLTextMsg).text.toLowerCase();
-      strReceivedData = strReceivedData + text;
-      receivedTbagDataCount++;
+      //print("PBX data: $text");
+      //   strReceivedData = strReceivedData + text;
+      //   receivedTbagDataCount++;
+
+      //   if (sentAgentStatus) {
+      //     int index = text.indexOf("directory number    :");
+      //     if (index != -1) {
+      //       int lastDateCallIndex = text.indexOf("last date call:");
+      //       String lastDateCallText = text.substring(lastDateCallIndex);
+      //       int delimiter = lastDateCallText.indexOf("|");
+      //       lastDateCallText = lastDateCallText.substring(15, delimiter);
+
+      //       //  print("Last date call: $lastDateCallText");
+
+      //       String agentNum = text.substring(index);
+      //       index = agentNum.indexOf("|");
+      //       agentNum = agentNum.substring(21, index).trim();
+      //       if (callCenterPeople[agentNum] != null) {
+      //         callCenterPeople[agentNum]!.agentStatus = text;
+      //       } else {
+      //         callCenterPeople[agentNum] =
+      //             CallCenterPerson(DirectroyNum: agentNum);
+      //       }
+      //       callCenterPeople[agentNum]!.lastDateCall = lastDateCallText;
+
+      //       //   events.emit('message', text);
+      //       events.emit('statusEvent', text);
+      //     }
+      //   }
+
+      //   if (sentTbagCmd && !receivedAgentsData) {
+      //     timer = setTimeout(() {
+      //       receivedAgentsData = true;
+
+      //       final entries = text.split("\r");
+
+      //       entries.forEach((entry) {
+      //         final fields = entry.split("|");
+
+      //         //print("Agent list: $text");
+
+      //         if (fields.length >= 8) {
+      //           try {
+      //             callCenterPeople[fields[3].trim()] = CallCenterPerson(
+      //                 id: int.parse(fields[1]),
+      //                 log_num: int.parse(fields[2]),
+      //                 DirectroyNum: fields[3].trim(),
+      //                 neqt: int.parse(fields[4]),
+      //                 type: fields[5],
+      //                 name: fields[6],
+      //                 msg_num: int.parse(fields[7]));
+      //             // print("Error: $callCenterPeople");
+      //           } catch (e) {
+      //             print("Error: $e");
+      //           }
+      //         }
+      //       });
+
+      //       callCenterPeople.forEach((key, person) {
+      //         setTimeout(() {
+      //           client!.write(TLTextMsg("agacd ${person.DirectroyNum}\r\n"));
+      //           sentAgentStatus = true;
+      //         }, 200);
+      //       });
+      //     }, 10000);
+      //   }
+
+      //   if (!sentTbagCmd) {
+      //     timer = setTimeout(() {
+      //       client!.write(
+      //           TLTextMsg("tabag\r\n")); //Command to get the list of agents
+      //       sentTbagCmd = true;
+      //       receivedTbagDataCount++;
+      //     }, 2000);
+      //   }
+      //   currentAgent ??= (String agentNum) {
+      //     strReceivedData = "";
+      //     timer = setTimeout(() {
+      //       client!.write(TLTextMsg("agacd $agentNum\r\n"));
+      //       sentTbagCmd = true;
+      //       receivedTbagDataCount++;
+      //     }, 1000);
+      //   };
 
       if (sentAgentStatus) {
-        int index = text.indexOf("directory number    :");
-        if (index != -1) {
-          int lastDateCallIndex = text.indexOf("last date call:");
-          String lastDateCallText = text.substring(lastDateCallIndex);
-          int delimiter = lastDateCallText.indexOf("|");
-          lastDateCallText = lastDateCallText.substring(15, delimiter);
-
-          //  print("Last date call: $lastDateCallText");
-
-          String agentNum = text.substring(index);
-          index = agentNum.indexOf("|");
-          agentNum = agentNum.substring(21, index).trim();
-          if (callCenterPeople[agentNum] != null) {
-            callCenterPeople[agentNum]!.agentStatus = text;
-          } else {
-            callCenterPeople[agentNum] =
-                CallCenterPerson(DirectroyNum: agentNum);
-          }
-          callCenterPeople[agentNum]!.lastDateCall = lastDateCallText;
-
-          //   events.emit('message', text);
-          events.emit('statusEvent', text);
-        }
+        //print("Agent status: $text");
+        events.emit('statusEvent', text);
       }
 
       if (sentTbagCmd && !receivedAgentsData) {
-        timer = setTimeout(() {
-          receivedAgentsData = true;
+        strReceivedData = strReceivedData + text;
 
-          final entries = text.split("\r");
+        final entries = strReceivedData.split("\r");
 
-          entries.forEach((entry) {
-            final fields = entry.split("|");
+        entries.forEach((entry) {
+          final fields = entry.split("|");
 
-            //print("Agent list: $text");
-
-            if (fields.length >= 8) {
-              try {
-                callCenterPeople[fields[3].trim()] = CallCenterPerson(
-                    id: int.parse(fields[1]),
-                    log_num: int.parse(fields[2]),
-                    DirectroyNum: fields[3].trim(),
-                    neqt: int.parse(fields[4]),
-                    type: fields[5],
-                    name: fields[6],
-                    msg_num: int.parse(fields[7]));
-                // print("Error: $callCenterPeople");
-              } catch (e) {
-                print("Error: $e");
-              }
+          if (fields.length >= 9) {
+            try {
+              callCenterPeople[fields[3].trim()] = CallCenterPerson(
+                  id: int.parse(fields[1]),
+                  log_num: int.parse(fields[2]),
+                  DirectroyNum: fields[3].trim(),
+                  neqt: int.parse(fields[4]),
+                  type: fields[5],
+                  name: fields[6],
+                  msg_num: int.parse(fields[7]));
+              // print("Error: $callCenterPeople");
+            } catch (e) {
+              print("Error: $e");
             }
-          });
+          }
+        });
 
+        if (callCenterPeople.length >= 185) {
+          print(
+            "{Call center people length: ${callCenterPeople.length}}",
+          );
           callCenterPeople.forEach((key, person) {
             setTimeout(() {
               client!.write(TLTextMsg("agacd ${person.DirectroyNum}\r\n"));
               sentAgentStatus = true;
             }, 200);
           });
-        }, 10000);
+
+          strReceivedData = "";
+          receivedAgentsData = true;
+
+          currentAgent ??= ((String endpoint) {
+            client!.write(TLTextMsg("agacd $endpoint\r\n"));
+            sentAgentStatus = true;
+          });
+        }
       }
 
-      if (!sentTbagCmd) {
-        timer = setTimeout(() {
-          client!.write(
-              TLTextMsg("tabag\r\n")); //Command to get the list of agents
-          sentTbagCmd = true;
-          receivedTbagDataCount++;
-        }, 2000);
-      }
-      currentAgent ??= (String agentNum) {
+      //if (sentTbagCmd && !receivedAgentsData) {
+      // = setTimeout(() {
+      // receivedAgentsData = true;
+
+      // final entries = text.split("\r");
+
+      // entries.forEach((entry) {
+      //   final fields = entry.split("|");
+
+      //   //print("Agent list: $text");
+
+      //   if (fields.length >= 8) {
+      //     try {
+      //       callCenterPeople[fields[3].trim()] = CallCenterPerson(
+      //           id: int.parse(fields[1]),
+      //           log_num: int.parse(fields[2]),
+      //           DirectroyNum: fields[3].trim(),
+      //           neqt: int.parse(fields[4]),
+      //           type: fields[5],
+      //           name: fields[6],
+      //           msg_num: int.parse(fields[7]));
+      //       // print("Error: $callCenterPeople");
+      //     } catch (e) {
+      //       print("Error: $e");
+      //     }
+      //   }
+      // });
+
+      //   callCenterPeople.forEach((key, person) {
+      //     setTimeout(() {
+      //       client!.write(TLTextMsg("agacd ${person.DirectroyNum}\r\n"));
+      //       sentAgentStatus = true;
+      //     }, 200);
+      //   });
+      //}, 10000);
+      // }
+
+      sendTabagCmd ??= setTimeout(() {
         strReceivedData = "";
-        // timer = setTimeout(() {
-        client!.write(TLTextMsg("agacd $agentNum\r\n"));
+        client!
+            .write(TLTextMsg("tabag\r\n")); //Command to get the list of agents
         sentTbagCmd = true;
         receivedTbagDataCount++;
-        // }, 300);
-      };
+      }, 100);
     }
   }
 }
@@ -745,6 +842,7 @@ class CallQueue {
       print("Realtime free agents : ${freeAgentsMap.keys.toList()}");
       print("Realtime count : ${freeAgentsMap.keys.toList().length}");
       print("Free agents before: ${getFreeAgent().length}");
+      print("Parsed call center personelle: ${callCenterPeople.length}");
 
       return waitForLoggedInAgent();
     } else {
