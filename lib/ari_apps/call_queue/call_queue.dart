@@ -654,7 +654,7 @@ class CallQueue {
     });
   }
 
-  Future<Agent> nextAgentV2(String incomingChannel) async {
+  Future<Agent?> nextAgentV2(String incomingChannel) async {
     incomingAcdToAgents[incomingChannel] = AcdCall(incomingChannel);
 
     // Ensure the event listener is added only once
@@ -683,6 +683,7 @@ class CallQueue {
     List<String> combinedList = combinedSet.toList();
 
     print("Agent list: $loggedInKeys");
+    if (combinedList.isEmpty) return null;
 
     return await getBestAgent(combinedList, combinedList[0], incomingChannel);
   }

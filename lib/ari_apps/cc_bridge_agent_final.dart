@@ -81,7 +81,9 @@ Future<void> originate(Channel incoming) async {
 
   Agent? agent = await callQueue.nextAgentV2(incoming.id);
 
-  callQueue.agentsAnswered[agent.endpoint] = agent;
+  if (agent != null) {
+    callQueue.agentsAnswered[agent.endpoint] = agent;
+  }
 
   agent?.statistics.unknownStateCallsTried++;
   print("Agent enpoint: ${agent?.endpoint}");
