@@ -528,8 +528,12 @@ class CallQueue {
       String staticText = text.substring(staticIndex);
       staticIndex = staticText.indexOf("|");
       if (staticIndex != -1) return "";
-
-      String staticState = staticText.substring(15, staticIndex).trim();
+      String staticState = "";
+      try {
+        staticState = staticText.substring(15, staticIndex).trim();
+      } catch (e) {
+        print("Error processing status: $e");
+      }
       print("processing agent status: $staticState");
       // agent.pbxState = staticState;
 
