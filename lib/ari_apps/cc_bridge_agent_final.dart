@@ -21,7 +21,6 @@ import 'package:dart_ari_proxy/globals.dart';
 import 'package:dotenv/dotenv.dart';
 import 'package:uuid/uuid.dart';
 
-String recorderIp = "10.43.0.55";
 HttpClient httpRtpClient = HttpClient();
 Future<int?> rtpPort(String filename) async {
   var uri = Uri(
@@ -232,7 +231,7 @@ Future<void> originate(Channel incoming) async {
         },
         app: 'hello',
         variables: {'CALLERID(name)': 'recording', 'recording': 'yes'},
-        external_host: '$recorderIp:$rtpport',
+        external_host: '$voiceLoggerIp:$rtpport',
         format: 'alaw',
       );
 
