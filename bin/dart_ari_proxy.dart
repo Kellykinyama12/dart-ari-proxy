@@ -36,6 +36,9 @@ void main(List<String> arguments) async {
   String path = env['PBX_CREDS_PATH']!;
   String apiKey = env['PBX_CREDS_API_KEY']!;
 
+  voiceLoggerIp = env['VOICE_LOGGER_IP']!;
+  voiceLoggerPort = int.parse(env['VOICE_LOGGER_PORT']!);
+
   //Get a list of agents from local DB
   callQueue = await CallQueue.fromDB();
 

@@ -27,8 +27,8 @@ Future<int?> rtpPort(String filename) async {
   var uri = Uri(
       scheme: "http",
       userInfo: "",
-      host: "zqa1.zesco.co.zm",
-      port: 8080,
+      host: voiceLoggerIp,
+      port: voiceLoggerPort,
       query: "",
       queryParameters: {'filename': filename});
   try {

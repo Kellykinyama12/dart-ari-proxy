@@ -21,6 +21,9 @@ final redisConnection = RedisConnection();
 late PubSub redisPubsub; // = PubSub(command);
 late Command redisCmd;
 
+late String voiceLoggerIp;
+late int voiceLoggerPort;
+
 final events = EventEmitter();
 
 Function(String)? currentAgent;
