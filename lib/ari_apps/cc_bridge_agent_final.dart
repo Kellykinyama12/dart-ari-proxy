@@ -230,7 +230,7 @@ Future<void> originate(Channel incoming) async {
           if (err) throw err;
         },
         app: 'hello',
-        variables: {'CALLERID(name)': 'recording', 'recording': 'yes'},
+        variables: {'CALLERID(name)': agent.endpoint, 'recording': 'yes'},
         external_host: '$voiceLoggerIp:$rtpport',
         format: 'alaw',
       );
