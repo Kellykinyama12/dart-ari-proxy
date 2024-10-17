@@ -825,7 +825,7 @@ class CallQueue {
         keyValueList.add(value);
       });
 
-      print("Free agents for $incomingChannel is ${keyValueList}");
+      // print("Free agents for $incomingChannel is ${keyValueList}");
 
       // .forEach((k, v) => keyValueList.add(v));
       incomingAcdToAgents[incomingChannel]!.bestAgent =
@@ -845,11 +845,11 @@ class CallQueue {
       await Future.delayed(Duration(milliseconds: 1000));
 
       //  print("Logged in list: ${agentsLoggedIn.keys.toList()}");
-      print("Logged in list: ${agentsLoggedIn.keys.toList().length}");
-      print("Realtime free agents : ${freeAgentsMap.keys.toList()}");
-      print("Realtime count : ${freeAgentsMap.keys.toList().length}");
-      print("Free agents before: ${getFreeAgent().length}");
-      print("Parsed call center personelle: ${callCenterPeople.length}");
+      // print("Logged in list: ${agentsLoggedIn.keys.toList().length}");
+      // print("Realtime free agents : ${freeAgentsMap.keys.toList()}");
+      // print("Realtime count : ${freeAgentsMap.keys.toList().length}");
+      // print("Free agents before: ${getFreeAgent().length}");
+      // print("Parsed call center personelle: ${callCenterPeople.length}");
 
       return waitForLoggedInAgent();
     } else {

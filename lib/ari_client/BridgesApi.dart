@@ -33,13 +33,17 @@ class BridgesAPI {
         //String? fragment
         );
 
-    HttpClientRequest request = await client.getUrl(uri);
-    HttpClientResponse response = await request.close();
-    //print(response);
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print(stringData);
-    return (statusCode: response.statusCode, resp: stringData);
+    try {
+      HttpClientRequest request = await client.getUrl(uri);
+      HttpClientResponse response = await request.close();
+      //print(response);
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print(stringData);
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      return (statusCode: null, resp: null, err: err);
+    }
   }
 
   static Future<dynamic> create(
@@ -67,14 +71,19 @@ class BridgesAPI {
     //var uri = Uri.http(baseUrl, '/bridges', queryParams);
 
     /// print(uri); // http://example.org/path?q=dart
-    HttpClientRequest request = await client.postUrl(uri);
-    HttpClientResponse response = await request.close();
-    //print(response);
+    ///
+    try {
+      HttpClientRequest request = await client.postUrl(uri);
+      HttpClientResponse response = await request.close();
+      //print(response);
 
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print(stringData);
-    return (statusCode: response.statusCode, resp: stringData);
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print(stringData);
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      return (statusCode: null, resp: null, err: err);
+    }
   }
 
   static Future<dynamic> createOrUpdate(
@@ -98,15 +107,19 @@ class BridgesAPI {
 
     // var uri = Uri.http(baseUrl, '/bridges/${bridgeId}', queryParams);
 
-    /// print(uri); // http://example.org/path?q=dart
-    HttpClientRequest request = await client.postUrl(uri);
-    HttpClientResponse response = await request.close();
-    //print(response);
+    try {
+      /// print(uri); // http://example.org/path?q=dart
+      HttpClientRequest request = await client.postUrl(uri);
+      HttpClientResponse response = await request.close();
+      //print(response);
 
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print(stringData);
-    return (statusCode: response.statusCode, resp: stringData);
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print(stringData);
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      return (statusCode: null, resp: null, err: err);
+    }
   }
 
   static Future<HttpClientResponse> get(String bridgeId) async {
@@ -146,15 +159,19 @@ class BridgesAPI {
 
     //var uri = Uri.http(baseUrl, '/bridges/${bridgeId}', queryParams);
 
-    /// print(uri); // http://example.org/path?q=dart
-    HttpClientRequest request = await client.deleteUrl(uri);
-    HttpClientResponse response = await request.close();
-    //print(response);
+    try {
+      /// print(uri); // http://example.org/path?q=dart
+      HttpClientRequest request = await client.deleteUrl(uri);
+      HttpClientResponse response = await request.close();
+      //print(response);
 
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print(stringData);
-    return (statusCode: response.statusCode, resp: stringData);
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print(stringData);
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      return (statusCode: null, resp: null, err: err);
+    }
   }
 
   static Future<dynamic> addChannel(
@@ -177,15 +194,19 @@ class BridgesAPI {
 
     //var uri = Uri.http(baseUrl, '/bridges/${bridgeId}/addChannel', queryParams);
 
-    /// print(uri); // http://example.org/path?q=dart
-    HttpClientRequest request = await client.postUrl(uri);
-    HttpClientResponse response = await request.close();
-    //print(response);
+    try {
+      /// print(uri); // http://example.org/path?q=dart
+      HttpClientRequest request = await client.postUrl(uri);
+      HttpClientResponse response = await request.close();
+      //print(response);
 
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print(stringData);
-    return (statusCode: response.statusCode, resp: stringData);
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print(stringData);
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      return (statusCode: null, resp: null, err: err);
+    }
   }
 
   static Future<dynamic> removeChannel(
@@ -208,15 +229,19 @@ class BridgesAPI {
     //var uri =
     //    Uri.http(baseUrl, '/bridges/${bridgeId}/removeChannel', queryParams);
 
-    /// print(uri); // http://example.org/path?q=dart
-    HttpClientRequest request = await client.postUrl(uri);
-    HttpClientResponse response = await request.close();
-    //print(response);
+    try {
+      /// print(uri); // http://example.org/path?q=dart
+      HttpClientRequest request = await client.postUrl(uri);
+      HttpClientResponse response = await request.close();
+      //print(response);
 
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print(stringData);
-    return (statusCode: response.statusCode, resp: stringData);
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print(stringData);
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      return (statusCode: null, resp: null, err: err);
+    }
   }
 
   static Future<dynamic> startMusicOnHold(String bridgeId) async {
@@ -237,16 +262,19 @@ class BridgesAPI {
 
     //var uri = Uri.http(baseUrl, '/bridges/${bridgeId}/moh', queryParams);
 
-    /// print(uri); // http://example.org/path?q=dart
-    HttpClientRequest request = await client.postUrl(uri);
-    HttpClientResponse response = await request.close();
-    //print(response);
+    try {
+      /// print(uri); // http://example.org/path?q=dart
+      HttpClientRequest request = await client.postUrl(uri);
+      HttpClientResponse response = await request.close();
+      //print(response);
 
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print(stringData);
-    return (statusCode: response.statusCode, resp: stringData);
-    ;
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print(stringData);
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      return (statusCode: null, resp: null, err: err);
+    }
   }
 
   static Future<HttpClientResponse> stopMusicOnHold(

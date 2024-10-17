@@ -105,13 +105,17 @@ class ChannelsApi {
         );
 
     //dsvar uri = Uri.http(baseUrl, '/channels', qParams);
-    HttpClientRequest request = await client.postUrl(uri);
-    HttpClientResponse response = await request.close();
-    //print(response);
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print(stringData);
-    return (statusCode: response.statusCode, resp: stringData);
+    try {
+      HttpClientRequest request = await client.postUrl(uri);
+      HttpClientResponse response = await request.close();
+      //print(response);
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print(stringData);
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      return (statusCode: null, resp: null, err: err);
+    }
   }
 
   static Future<dynamic> create(
@@ -170,13 +174,17 @@ class ChannelsApi {
           'variables': variables ?? ""
         });
 
-    HttpClientRequest request = await client.postUrl(uri);
-    HttpClientResponse response = await request.close();
-    //print(response);
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print(stringData);
-    return (statusCode: response.statusCode, resp: stringData);
+    try {
+      HttpClientRequest request = await client.postUrl(uri);
+      HttpClientResponse response = await request.close();
+      //print(response);
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print(stringData);
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      return (statusCode: null, resp: null, err: err);
+    }
   }
 
   static Future<dynamic> createWithId(
@@ -233,13 +241,17 @@ class ChannelsApi {
           'originator': originator ?? "",
         });
 
-    HttpClientRequest request = await client.postUrl(uri);
-    HttpClientResponse response = await request.close();
-    //print(response);
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print(stringData);
-    return (statusCode: response.statusCode, resp: stringData);
+    try {
+      HttpClientRequest request = await client.postUrl(uri);
+      HttpClientResponse response = await request.close();
+      //print(response);
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print(stringData);
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      return (statusCode: null, resp: null, err: err);
+    }
   }
 
   static Future<HttpClientResponse> get(String channelId) async {
@@ -328,13 +340,18 @@ class ChannelsApi {
         //String? fragment
         );
     //var uri = Uri.http(baseUrl, '/channels/${channelId}');
-    HttpClientRequest request = await client.deleteUrl(uri);
-    HttpClientResponse response = await request.close();
-    //print(response);
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print(stringData);
-    return (statusCode: response.statusCode, resp: stringData);
+
+    try {
+      HttpClientRequest request = await client.deleteUrl(uri);
+      HttpClientResponse response = await request.close();
+      //print(response);
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print(stringData);
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      return (statusCode: null, resp: null, err: err);
+    }
   }
 
   static Future<dynamic> continueInDialplan(String channelId,
@@ -378,14 +395,18 @@ class ChannelsApi {
         );
 
     //var uri = Uri.http(baseUrl, '/channels/${channelId}/continue', qParams);
-    HttpClientRequest request = await client.postUrl(uri);
-    HttpClientResponse response = await request.close();
-    //print(response);
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print(stringData);
-    // return response;
-    return (statusCode: response.statusCode, resp: stringData);
+    try {
+      HttpClientRequest request = await client.postUrl(uri);
+      HttpClientResponse response = await request.close();
+      //print(response);
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print(stringData);
+      // return response;
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      return (statusCode: null, resp: null, err: err);
+    }
   }
 
   static Future<HttpClientResponse> redirect(
@@ -816,15 +837,18 @@ class ChannelsApi {
         );
 
     //var uri = Uri(baseUrl);
-    
-    HttpClientRequest request = await client.postUrl(uri);
-    HttpClientResponse response = await request.close();
-    //print(response);
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print(stringData);
-    //return response;
-    return (statusCode: response.statusCode, resp: stringData);
+    try {
+      HttpClientRequest request = await client.postUrl(uri);
+      HttpClientResponse response = await request.close();
+      //print(response);
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print(stringData);
+      //return response;
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      return (statusCode: null, resp: null, err: err);
+    }
   }
 
   static Future<dynamic> playWithId(
@@ -864,13 +888,17 @@ class ChannelsApi {
         //String? fragment
         );
 
-    HttpClientRequest request = await client.postUrl(uri);
-    HttpClientResponse response = await request.close();
-    //print(response);
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print(stringData);
-    return (statusCode: response.statusCode, resp: stringData);
+    try {
+      HttpClientRequest request = await client.postUrl(uri);
+      HttpClientResponse response = await request.close();
+      //print(response);
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print(stringData);
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      return (statusCode: null, resp: null, err: err);
+    }
   }
 
   static Future<HttpClientResponse> record(
@@ -933,13 +961,17 @@ class ChannelsApi {
         //String? fragment
         );
 
-    HttpClientRequest request = await client.getUrl(uri);
-    HttpClientResponse response = await request.close();
-    //print(response);
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print(stringData);
-    return (statusCode: response.statusCode, resp: stringData);
+    try {
+      HttpClientRequest request = await client.getUrl(uri);
+      HttpClientResponse response = await request.close();
+      //print(response);
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print(stringData);
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      return (statusCode: null, resp: null, err: err);
+    }
   }
 
   static Future<HttpClientResponse> setChannelVariable(
@@ -1050,13 +1082,18 @@ class ChannelsApi {
       },
       //String? fragment
     );
-    HttpClientRequest request = await client.postUrl(uri);
-    HttpClientResponse response = await request.close();
-    //print(response);
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print("External media channel: $stringData");
-    return (statusCode: response.statusCode, resp: stringData);
+
+    try {
+      HttpClientRequest request = await client.postUrl(uri);
+      HttpClientResponse response = await request.close();
+      //print(response);
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print("External media channel: $stringData");
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      return (statusCode: null, resp: null, err: err);
+    }
   }
 
   static Future<dynamic> externalMediaDelete(String id) async {
@@ -1100,13 +1137,18 @@ class ChannelsApi {
       // },
       //String? fragment
     );
-    HttpClientRequest request = await client.deleteUrl(uri);
-    HttpClientResponse response = await request.close();
-    //print(response);
-    final String stringData = await response.transform(utf8.decoder).join();
-    //print(response.statusCode);
-    //print(stringData);
-    return (statusCode: response.statusCode, resp: stringData);
+
+    try {
+      HttpClientRequest request = await client.deleteUrl(uri);
+      HttpClientResponse response = await request.close();
+      //print(response);
+      final String stringData = await response.transform(utf8.decoder).join();
+      //print(response.statusCode);
+      //print(stringData);
+      return (statusCode: response.statusCode, resp: stringData);
+    } catch (err) {
+      return (statusCode: null, resp: null, err: err);
+    }
   }
   // static Future<dynamic> externalMediaDelete(String channelId) async {
   //   // params: {
