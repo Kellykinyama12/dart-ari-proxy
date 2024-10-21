@@ -186,7 +186,7 @@ Future<void> originate(Channel incoming) async {
     }
   });
 
-  dialed.once('ChannelDestroyed', (event) async {
+  dialed.on('ChannelDestroyed', (event) async {
     var (channelDestroyedEvent, channel) = event as (ChannelDestroyed, Channel);
 
     if (dialedChannelDestroyedListeners[incoming.id] == null) {
@@ -227,7 +227,7 @@ Future<void> originate(Channel incoming) async {
 
     Bridge mixingBridge = await client.bridge(type: ['mixing']);
 
-    dialed.once('StasisEnd', (event) async {
+    dialed.on('StasisEnd', (event) async {
       var (stasisEndEvent, channel) = event as (StasisEnd, Channel);
 
       if (dialedStasisEndListeners[incoming.id] == null) {
