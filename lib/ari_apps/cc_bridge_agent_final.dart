@@ -189,14 +189,15 @@ Future<void> originate(Channel incoming) async {
     });
   }
 
+  if (!dialed.listeners.contains('ChannelDestroyed')) {
   dialed.on('ChannelDestroyed', (event) async {
     var (channelDestroyedEvent, channel) = event as (ChannelDestroyed, Channel);
 
-    if (dialedChannelDestroyedListeners[incoming.id] == null) {
-      dialedChannelDestroyedListeners[incoming.id] = 1;
-    } else {
-      throw "Dialed channel: ${channel.id} is already listening to ChannelDestroyed event";
-    }
+    // if (dialedChannelDestroyedListeners[incoming.id] == null) {
+    //   dialedChannelDestroyedListeners[incoming.id] = 1;
+    // } else {
+    //   throw "Dialed channel: ${channel.id} is already listening to ChannelDestroyed event";
+    // }
 
     if (succeededCalls[incoming.id] == true) {
       await incoming.continueInDialplan(
