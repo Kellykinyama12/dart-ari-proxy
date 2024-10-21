@@ -190,37 +190,39 @@ Future<void> originate(Channel incoming) async {
   }
 
   if (!dialed.listeners.contains('ChannelDestroyed')) {
-  dialed.on('ChannelDestroyed', (event) async {
-    var (channelDestroyedEvent, channel) = event as (ChannelDestroyed, Channel);
+    dialed.on('ChannelDestroyed', (event) async {
+      var (channelDestroyedEvent, channel) =
+          event as (ChannelDestroyed, Channel);
 
-    // if (dialedChannelDestroyedListeners[incoming.id] == null) {
-    //   dialedChannelDestroyedListeners[incoming.id] = 1;
-    // } else {
-    //   throw "Dialed channel: ${channel.id} is already listening to ChannelDestroyed event";
-    // }
-
-    if (succeededCalls[incoming.id] == true) {
-      await incoming.continueInDialplan(
-          context: 'call-rating', priority: 1, extension: 's');
-
-      if (voiceRecords[incoming.id] != null) {
-        voiceRecords[incoming.id]!.duration_number =
-            channelDestroyedEvent.timestamp.toString();
-        voiceRecords[incoming.id]!.hangupdate =
-            channelDestroyedEvent.timestamp.toString();
-        voiceRecords.remove(incoming.id);
+      if (dialedChannelDestroyedListeners[incoming.id] == null) {
+        dialedChannelDestroyedListeners[incoming.id] = 1;
+      } else {
+        throw "Dialed channel: ${channel.id} is already listening to ChannelDestroyed event";
       }
 
-      if (agent.status == AgentState.ONCONVERSATION) {
-        setTimeout(() {
-          print("setting agent state: to idle");
-          agent.status = AgentState.IDLE;
-          DbQueries.updateAgentStatus(
-              agent.endpoint, agent.state.toString(), agent.status.toString());
-        }, 30000);
-      } else {}
-    }
-  });
+      if (succeededCalls[incoming.id] == true) {
+        await incoming.continueInDialplan(
+            context: 'call-rating', priority: 1, extension: 's');
+
+        if (voiceRecords[incoming.id] != null) {
+          voiceRecords[incoming.id]!.duration_number =
+              channelDestroyedEvent.timestamp.toString();
+          voiceRecords[incoming.id]!.hangupdate =
+              channelDestroyedEvent.timestamp.toString();
+          voiceRecords.remove(incoming.id);
+        }
+
+        if (agent.status == AgentState.ONCONVERSATION) {
+          setTimeout(() {
+            print("setting agent state: to idle");
+            agent.status = AgentState.IDLE;
+            DbQueries.updateAgentStatus(agent.endpoint, agent.state.toString(),
+                agent.status.toString());
+          }, 30000);
+        } else {}
+      }
+    });
+  }
 
   dialed.on('StasisStart', (event) async {
     if (dialedStasisStartListeners[incoming.id] == null) {
