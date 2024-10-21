@@ -812,11 +812,12 @@ class CallQueue {
     if (incomingAcdToAgents[incomingChannel] != null &&
         incomingAcdToAgents[incomingChannel]!.freeAgents.isEmpty) {
       if (currentAgent != null) {
+        print("Checking agent status ${currAgent.endpoint}");
         currentAgent!(currAgent.endpoint);
       } else {
         throw "CurrentAgent function cannot be null";
       }
-      await Future.delayed(Duration(milliseconds: 1000));
+      await Future.delayed(Duration(milliseconds: 200));
 
       print("Logged in list: ${agentsLoggedIn.keys.toList().length}");
 
