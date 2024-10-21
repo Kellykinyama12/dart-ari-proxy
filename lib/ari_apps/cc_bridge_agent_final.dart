@@ -226,73 +226,77 @@ Future<void> originate(Channel incoming) async {
     });
   }
 
-  dialed.on('StasisStart', (event) async {
-    if (dialedStasisStartListeners[incoming.id] == null) {
-      dialedStasisStartListeners[incoming.id] = 1;
-    } else {
-      throw "Dialed channel: ${dialed.id} is already listening to ChannelDestroyed event";
-    }
-
-    Bridge mixingBridge = await client.bridge(type: ['mixing']);
-
-    dialed.on('StasisEnd', (event) async {
-      var (stasisEndEvent, channel) = event as (StasisEnd, Channel);
-
-      if (dialedStasisEndListeners[incoming.id] == null) {
-        dialedStasisEndListeners[incoming.id] = 1;
+  if (!dialed.listeners.contains('StasisStart')) {
+    dialed.on('StasisStart', (event) async {
+      if (dialedStasisStartListeners[incoming.id] == null) {
+        dialedStasisStartListeners[incoming.id] = 1;
       } else {
-        throw "Dialed channel: ${dialed.id} is already listening to StasisEnd event";
-      }
-      if (succeededCalls[incoming.id] == true) {
-        await incoming.continueInDialplan(
-            context: 'call-rating', priority: 1, extension: 's');
-
-        if (voiceRecords[incoming.id] != null) {
-          voiceRecords[incoming.id]!.duration_number =
-              stasisEndEvent.timestamp.toString();
-
-          voiceRecords[incoming.id]!.hangupdate =
-              stasisEndEvent.timestamp.toString();
-          await voiceRecords[incoming.id]!.insertCallRecording();
-          agent.waitingSince = DateTime.now();
-          voiceRecords.remove(incoming.id);
-        }
+        throw "Dialed channel: ${dialed.id} is already listening to ChannelDestroyed event";
       }
 
-      await mixingBridge.destroy();
+      Bridge mixingBridge = await client.bridge(type: ['mixing']);
 
-      if (agent.status == AgentState.ONCONVERSATION) {
-        setTimeout(() {
-          print("setting agent state: to idle");
-          agent.status = AgentState.IDLE;
-          DbQueries.updateAgentStatus(
-              agent.endpoint, agent.state.toString(), agent.status.toString());
-        }, 30000);
+      if (!dialed.listeners.contains('StasisEnd')) {
+        dialed.on('StasisEnd', (event) async {
+          var (stasisEndEvent, channel) = event as (StasisEnd, Channel);
+
+          // if (dialedStasisEndListeners[incoming.id] == null) {
+          //   dialedStasisEndListeners[incoming.id] = 1;
+          // } else {
+          //   throw "Dialed channel: ${dialed.id} is already listening to StasisEnd event";
+          // }
+          if (succeededCalls[incoming.id] == true) {
+            await incoming.continueInDialplan(
+                context: 'call-rating', priority: 1, extension: 's');
+
+            if (voiceRecords[incoming.id] != null) {
+              voiceRecords[incoming.id]!.duration_number =
+                  stasisEndEvent.timestamp.toString();
+
+              voiceRecords[incoming.id]!.hangupdate =
+                  stasisEndEvent.timestamp.toString();
+              await voiceRecords[incoming.id]!.insertCallRecording();
+              agent.waitingSince = DateTime.now();
+              voiceRecords.remove(incoming.id);
+            }
+          }
+
+          await mixingBridge.destroy();
+
+          if (agent.status == AgentState.ONCONVERSATION) {
+            setTimeout(() {
+              print("setting agent state: to idle");
+              agent.status = AgentState.IDLE;
+              DbQueries.updateAgentStatus(agent.endpoint,
+                  agent.state.toString(), agent.status.toString());
+            }, 30000);
+          } else {
+            // agent.status = AgentState.IDLE;
+          }
+        });
+      }
+
+      await dialed.answer();
+
+      if (rtpport != null) {
+        externalChannel = await client.externalMedia(
+          (err, externalChannel) {
+            if (err) throw err;
+          },
+          app: 'hello',
+          variables: {'CALLERID(name)': agent.endpoint, 'recording': 'yes'},
+          external_host: '$voiceLoggerIp:$rtpport',
+          format: 'alaw',
+        );
+
+        // //final mixingBridge = await bridge.create(type: ['mixing']);
+        await mixingBridge
+            .addChannel(channels: [incoming.id, dialed.id, externalChannel.id]);
       } else {
-        // agent.status = AgentState.IDLE;
+        await mixingBridge.addChannel(channels: [incoming.id, dialed.id]);
       }
     });
-
-    await dialed.answer();
-
-    if (rtpport != null) {
-      externalChannel = await client.externalMedia(
-        (err, externalChannel) {
-          if (err) throw err;
-        },
-        app: 'hello',
-        variables: {'CALLERID(name)': agent.endpoint, 'recording': 'yes'},
-        external_host: '$voiceLoggerIp:$rtpport',
-        format: 'alaw',
-      );
-
-      // //final mixingBridge = await bridge.create(type: ['mixing']);
-      await mixingBridge
-          .addChannel(channels: [incoming.id, dialed.id, externalChannel.id]);
-    } else {
-      await mixingBridge.addChannel(channels: [incoming.id, dialed.id]);
-    }
-  });
+  }
 
   await dialed.originate(
       // endpoint: next_agent.number,
