@@ -228,11 +228,11 @@ Future<void> originate(Channel incoming) async {
 
   if (!dialed.listeners.contains('StasisStart')) {
     dialed.on('StasisStart', (event) async {
-      if (dialedStasisStartListeners[incoming.id] == null) {
-        dialedStasisStartListeners[incoming.id] = 1;
-      } else {
-        throw "Dialed channel: ${dialed.id} is already listening to ChannelDestroyed event";
-      }
+      // if (dialedStasisStartListeners[incoming.id] == null) {
+      //   dialedStasisStartListeners[incoming.id] = 1;
+      // } else {
+      //   throw "Dialed channel: ${dialed.id} is already listening to ChannelDestroyed event";
+      // }
 
       Bridge mixingBridge = await client.bridge(type: ['mixing']);
 
