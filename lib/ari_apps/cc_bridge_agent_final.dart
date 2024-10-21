@@ -77,6 +77,7 @@ stasisStart(StasisStart event, Channel channel) async {
     const oneSec = Duration(seconds: 3);
     Timer.periodic(oneSec, (Timer t) {
       callTimers[channel.id] = t;
+      channel.off();
       originate(channel);
     });
   } else {
@@ -141,50 +142,52 @@ Future<void> originate(Channel incoming) async {
     // callQueue.incomingAcdToAgents.remove(incoming.id);
   });
 
-  dialed.on('ChannelStateChange', (event) {
-    var (channelStateChangeEvent, dialChannel) =
-        event as (ChannelStateChange, Channel);
-    print('Dialed status to: ${dialChannel.state}');
+  if (!dialed.listeners.contains('ChannelStateChange')) {
+    dialed.on('ChannelStateChange', (event) {
+      var (channelStateChangeEvent, dialChannel) =
+          event as (ChannelStateChange, Channel);
+      print('Dialed status to: ${dialChannel.state}');
 
-    if (dialChannelStateChangeListeners[incoming.id] == null) {
-      dialChannelStateChangeListeners[incoming.id] = 1;
-    } else {
-      throw "Dialed channel: ${dialChannel.id} is already listening to ChannelStateChange event";
-    }
-    if (dialChannel.state == 'Up') {
-      voiceRecords[incoming.id] = CallRecording(
-        file_name: filename,
-        file_path: filename,
-        agent_number: endpoint,
-        phone_number: incoming.caller.number,
-        answerdate: channelStateChangeEvent.timestamp.toString(),
-        src: incoming.caller.number,
-        dst: agent.endpoint,
-        clid: incoming.caller.number,
-      );
-      agent.statistics.answereCalls++;
-      agent.status = AgentState.ONCONVERSATION;
-      DbQueries.updateAgentStatus(
-          agent.endpoint, agent.state.toString(), agent.status.toString());
-      print("Removing timer ...");
-      callTimers.remove(incoming.id);
-      succeededCalls[incoming.id] = true;
-      //}
-    }
-
-    if (dialChannel.state == 'Ringing') {
-      agent.status = AgentState.RINGING;
-      DbQueries.updateAgentStatus(
-          agent.endpoint, agent.state.toString(), agent.status.toString());
-
-      //callQueue.agentsLogged[agent.endpoint] = agent;
-      agent.statistics.receivedCalls++;
-
-      if (callTimers[incoming.id] != null) {
-        callTimers[incoming.id]!.cancel();
+      // if (dialChannelStateChangeListeners[incoming.id] == null) {
+      //   dialChannelStateChangeListeners[incoming.id] = 1;
+      // } else {
+      //   throw "Dialed channel: ${dialChannel.id} is already listening to ChannelStateChange event";
+      // }
+      if (dialChannel.state == 'Up') {
+        voiceRecords[incoming.id] = CallRecording(
+          file_name: filename,
+          file_path: filename,
+          agent_number: endpoint,
+          phone_number: incoming.caller.number,
+          answerdate: channelStateChangeEvent.timestamp.toString(),
+          src: incoming.caller.number,
+          dst: agent.endpoint,
+          clid: incoming.caller.number,
+        );
+        agent.statistics.answereCalls++;
+        agent.status = AgentState.ONCONVERSATION;
+        DbQueries.updateAgentStatus(
+            agent.endpoint, agent.state.toString(), agent.status.toString());
+        print("Removing timer ...");
+        callTimers.remove(incoming.id);
+        succeededCalls[incoming.id] = true;
+        //}
       }
-    }
-  });
+
+      if (dialChannel.state == 'Ringing') {
+        agent.status = AgentState.RINGING;
+        DbQueries.updateAgentStatus(
+            agent.endpoint, agent.state.toString(), agent.status.toString());
+
+        //callQueue.agentsLogged[agent.endpoint] = agent;
+        agent.statistics.receivedCalls++;
+
+        if (callTimers[incoming.id] != null) {
+          callTimers[incoming.id]!.cancel();
+        }
+      }
+    });
+  }
 
   dialed.on('ChannelDestroyed', (event) async {
     var (channelDestroyedEvent, channel) = event as (ChannelDestroyed, Channel);
