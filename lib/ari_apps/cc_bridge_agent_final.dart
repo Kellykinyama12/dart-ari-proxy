@@ -115,7 +115,7 @@ Future<void> originate(Channel incoming) async {
 
   Channel externalChannel;
 
-  if (!dialed.listeners.contains('StasisEnd')) {
+  if (!incoming.listeners.contains('StasisEnd')) {
     incoming.on('StasisEnd', (event) async {
       var (stasisEndEvent, channel) = event as (StasisEnd, Channel);
 
