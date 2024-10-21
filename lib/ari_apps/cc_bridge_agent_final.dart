@@ -49,6 +49,16 @@ Map<String, CallRecording> voiceRecords = {};
 Map<String, bool> succeededCalls = {};
 Map<String, Timer> callTimers = {};
 
+Map<String, int> dialChannelStateChangeListeners = {};
+
+Map<String, int> incomingStasisEndListeners = {};
+
+Map<String, int> dialedChannelDestroyedListeners = {};
+
+Map<String, int> dialedStasisStartListeners = {};
+
+Map<String, int> dialedStasisEndListeners = {};
+
 stasisStart(StasisStart event, Channel channel) async {
   bool dialed = event.args.length > 0 ? event.args[0] == 'dialed' : false;
   if (channel.name.contains('UnicastRTP')) {
@@ -104,8 +114,16 @@ Future<void> originate(Channel incoming) async {
 
   Channel externalChannel;
 
-  incoming.once('StasisEnd', (event) async {
+  incoming.on('StasisEnd', (event) async {
     var (stasisEndEvent, channel) = event as (StasisEnd, Channel);
+
+    if (incomingStasisEndListeners[incoming.id] == null) {
+      incomingStasisEndListeners[incoming.id] = 1;
+    } else {
+      throw "Incoming channel: ${incoming.id} is already listening to StasisEnd event";
+    }
+
+    print("Incoming channel: ${incoming.id} exited our apllication");
     if (callTimers[incoming.id] != null) {
       callTimers[incoming.id]!.cancel();
       callTimers.remove(incoming.id);
@@ -127,6 +145,12 @@ Future<void> originate(Channel incoming) async {
     var (channelStateChangeEvent, dialChannel) =
         event as (ChannelStateChange, Channel);
     print('Dialed status to: ${dialChannel.state}');
+
+    if (dialChannelStateChangeListeners[incoming.id] == null) {
+      dialChannelStateChangeListeners[incoming.id] = 1;
+    } else {
+      throw "Dialed channel: ${dialChannel.id} is already listening to ChannelStateChange event";
+    }
     if (dialChannel.state == 'Up') {
       voiceRecords[incoming.id] = CallRecording(
         file_name: filename,
@@ -164,6 +188,13 @@ Future<void> originate(Channel incoming) async {
 
   dialed.once('ChannelDestroyed', (event) async {
     var (channelDestroyedEvent, channel) = event as (ChannelDestroyed, Channel);
+
+    if (dialedChannelDestroyedListeners[incoming.id] == null) {
+      dialedChannelDestroyedListeners[incoming.id] = 1;
+    } else {
+      throw "Dialed channel: ${channel.id} is already listening to ChannelDestroyed event";
+    }
+
     if (succeededCalls[incoming.id] == true) {
       await incoming.continueInDialplan(
           context: 'call-rating', priority: 1, extension: 's');
@@ -187,11 +218,23 @@ Future<void> originate(Channel incoming) async {
     }
   });
 
-  dialed.once('StasisStart', (event) async {
+  dialed.on('StasisStart', (event) async {
+    if (dialedStasisStartListeners[incoming.id] == null) {
+      dialedStasisStartListeners[incoming.id] = 1;
+    } else {
+      throw "Dialed channel: ${dialed.id} is already listening to ChannelDestroyed event";
+    }
+
     Bridge mixingBridge = await client.bridge(type: ['mixing']);
 
     dialed.once('StasisEnd', (event) async {
       var (stasisEndEvent, channel) = event as (StasisEnd, Channel);
+
+      if (dialedStasisEndListeners[incoming.id] == null) {
+        dialedStasisEndListeners[incoming.id] = 1;
+      } else {
+        throw "Dialed channel: ${dialed.id} is already listening to StasisEnd event";
+      }
       if (succeededCalls[incoming.id] == true) {
         await incoming.continueInDialplan(
             context: 'call-rating', priority: 1, extension: 's');
