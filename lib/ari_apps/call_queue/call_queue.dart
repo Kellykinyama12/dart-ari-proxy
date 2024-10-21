@@ -786,7 +786,7 @@ class CallQueue {
 
     List<String> combinedList = combinedSet.toList();
 
-    //print("Agent list: $loggedInKeys");
+    print("Agent list: $loggedInKeys");
     if (combinedList.isEmpty) return null;
 
     return await getBestAgent(combinedList, combinedList[0], incomingChannel);
@@ -817,6 +817,8 @@ class CallQueue {
         throw "CurrentAgent function cannot be null";
       }
       await Future.delayed(Duration(milliseconds: 1000));
+
+      print("Logged in list: ${agentsLoggedIn.keys.toList().length}");
 
       return getBestAgent(keys, nextKey, incomingChannel);
     } else {
