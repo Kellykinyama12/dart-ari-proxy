@@ -115,32 +115,34 @@ Future<void> originate(Channel incoming) async {
 
   Channel externalChannel;
 
-  incoming.on('StasisEnd', (event) async {
-    var (stasisEndEvent, channel) = event as (StasisEnd, Channel);
+  if (!dialed.listeners.contains('StasisEnd')) {
+    incoming.on('StasisEnd', (event) async {
+      var (stasisEndEvent, channel) = event as (StasisEnd, Channel);
 
-    if (incomingStasisEndListeners[incoming.id] == null) {
-      incomingStasisEndListeners[incoming.id] = 1;
-    } else {
-      throw "Incoming channel: ${incoming.id} is already listening to StasisEnd event";
-    }
+      // if (incomingStasisEndListeners[incoming.id] == null) {
+      //   incomingStasisEndListeners[incoming.id] = 1;
+      // } else {
+      //   throw "Incoming channel: ${incoming.id} is already listening to StasisEnd event";
+      // }
 
-    print("Incoming channel: ${incoming.id} exited our apllication");
-    if (callTimers[incoming.id] != null) {
-      callTimers[incoming.id]!.cancel();
+      print("Incoming channel: ${incoming.id} exited our apllication");
+      if (callTimers[incoming.id] != null) {
+        callTimers[incoming.id]!.cancel();
+        callTimers.remove(incoming.id);
+      }
       callTimers.remove(incoming.id);
-    }
-    callTimers.remove(incoming.id);
-    await dialed.hangup();
-    //incoming.off();
+      await dialed.hangup();
+      //incoming.off();
 
-    if (agent.status == AgentState.ONCONVERSATION) {
-      setTimeout(() {
-        print("setting agent state: to idle");
-        //agent.status = AgentState.IDLE;
-      }, 30000);
-    } else {}
-    // callQueue.incomingAcdToAgents.remove(incoming.id);
-  });
+      if (agent.status == AgentState.ONCONVERSATION) {
+        setTimeout(() {
+          print("setting agent state: to idle");
+          //agent.status = AgentState.IDLE;
+        }, 30000);
+      } else {}
+      // callQueue.incomingAcdToAgents.remove(incoming.id);
+    });
+  }
 
   if (!dialed.listeners.contains('ChannelStateChange')) {
     dialed.on('ChannelStateChange', (event) {
