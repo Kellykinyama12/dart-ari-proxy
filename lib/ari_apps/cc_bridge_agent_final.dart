@@ -233,6 +233,7 @@ Future<void> originate(Channel incoming) async {
       // } else {
       //   throw "Dialed channel: ${dialed.id} is already listening to ChannelDestroyed event";
       // }
+      print("dialed channel: ${dialed.id} entered application");
 
       Bridge mixingBridge = await client.bridge(type: ['mixing']);
 
