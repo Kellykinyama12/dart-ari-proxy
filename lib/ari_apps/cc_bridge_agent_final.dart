@@ -156,6 +156,7 @@ Future<void> originate(Channel incoming) async {
       //   throw "Dialed channel: ${dialChannel.id} is already listening to ChannelStateChange event";
       // }
       if (dialChannel.state == 'Up') {
+        print("dialed channel: ${dialed.id} is on a call");
         voiceRecords[incoming.id] = CallRecording(
           file_name: filename,
           file_path: filename,
@@ -196,6 +197,8 @@ Future<void> originate(Channel incoming) async {
       var (channelDestroyedEvent, channel) =
           event as (ChannelDestroyed, Channel);
 
+      print("dialed channel: ${dialed.id} exited our application");
+
       // if (dialedChannelDestroyedListeners[incoming.id] == null) {
       //   dialedChannelDestroyedListeners[incoming.id] = 1;
       // } else {
@@ -233,13 +236,15 @@ Future<void> originate(Channel incoming) async {
       // } else {
       //   throw "Dialed channel: ${dialed.id} is already listening to ChannelDestroyed event";
       // }
-      print("dialed channel: ${dialed.id} entered application");
+      print("dialed channel: ${dialed.id} entered our application");
 
       Bridge mixingBridge = await client.bridge(type: ['mixing']);
 
       if (!dialed.listeners.contains('StasisEnd')) {
         dialed.on('StasisEnd', (event) async {
           var (stasisEndEvent, channel) = event as (StasisEnd, Channel);
+
+          print("dialed channel: ${dialed.id} exited our application");
 
           // if (dialedStasisEndListeners[incoming.id] == null) {
           //   dialedStasisEndListeners[incoming.id] = 1;
