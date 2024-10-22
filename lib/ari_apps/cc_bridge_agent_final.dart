@@ -74,11 +74,11 @@ stasisStart(StasisStart event, Channel channel) async {
     Playback playback = client.playback();
     await channel.play(playback, media: ['sound:vm-dialout']);
 
-    const oneSec = Duration(seconds: 3);
+    //const oneSec = Duration(seconds: 3);
     // Timer.periodic(oneSec, (Timer t) {
     //   callTimers[channel.id] = t;
     //   channel.off();
-    originate(channel);
+    await originate(channel);
     // });
   } else {
     if (event.args.length > 0 && event.args[0] == 'dialed') {}
