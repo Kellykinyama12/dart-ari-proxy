@@ -785,6 +785,7 @@ class CallQueue {
       ..addAll(answereKeys);
 
     List<String> combinedList = combinedSet.toList();
+    combinedList.shuffle(Random());
 
     print("Agent list: $loggedInKeys");
     if (combinedList.isEmpty) return null;
