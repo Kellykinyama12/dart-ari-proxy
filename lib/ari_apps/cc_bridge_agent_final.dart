@@ -302,7 +302,7 @@ Future<void> originate(Channel incoming) async {
       // endpoint: next_agent.number,
       endpoint: endpoint,
       app: 'hello',
-      appArgs: ['dialed'],
+      appArgs: ['dialed', agent.endpoint, incoming.id],
       callerId: incoming.caller.number);
 }
 
