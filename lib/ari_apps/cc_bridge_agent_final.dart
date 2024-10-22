@@ -96,8 +96,8 @@ Future<void> originate(Channel incoming) async {
   }
 
   agent?.statistics.unknownStateCallsTried++;
-  print("Agent enpoint: ${agent?.endpoint}");
-  print("Agent state: ${agent?.state}");
+  print("Agent enpoint to dial: ${agent?.endpoint}");
+  //print("Agent state: ${agent?.state}");
   print("");
 
   if (agent == null) {
@@ -109,6 +109,7 @@ Future<void> originate(Channel incoming) async {
     return;
   }
   String endpoint = "SIP/7000/${agent.endpoint}";
+  print("Agent enpoint to dial: $endpoint");
 
   int? rtpport = await rtpPort(filename);
   var dialed = await client.channel(endpoint: endpoint);
