@@ -49,16 +49,6 @@ Map<String, CallRecording> voiceRecords = {};
 Map<String, bool> succeededCalls = {};
 Map<String, Timer> callTimers = {};
 
-Map<String, int> dialChannelStateChangeListeners = {};
-
-Map<String, int> incomingStasisEndListeners = {};
-
-Map<String, int> dialedChannelDestroyedListeners = {};
-
-Map<String, int> dialedStasisStartListeners = {};
-
-Map<String, int> dialedStasisEndListeners = {};
-
 stasisStart(StasisStart event, Channel channel) async {
   bool dialed = event.args.length > 0 ? event.args[0] == 'dialed' : false;
   if (channel.name.contains('UnicastRTP')) {
@@ -79,6 +69,7 @@ stasisStart(StasisStart event, Channel channel) async {
     //   callTimers[channel.id] = t;
     //   channel.off();
     await originate(channel);
+    callTimers.remove(channel.id);
     // });
   } else {
     if (event.args.length > 0 && event.args[0] == 'dialed') {}
@@ -90,6 +81,8 @@ Future<void> originate(Channel incoming) async {
   String filename = uid.v1();
 
   Agent? agent = await callQueue.nextAgentV2(incoming.id);
+
+  callQueue.incomingAcdToAgents.remove(incoming.id);
 
   if (agent != null) {
     callQueue.agentsAnswered[agent.endpoint] = agent;
@@ -114,7 +107,7 @@ Future<void> originate(Channel incoming) async {
   int? rtpport = await rtpPort(filename);
   var dialed = await client.channel(endpoint: endpoint);
 
-  Channel externalChannel;
+  Channel? externalChannel;
 
   if (!incoming.listeners.contains('StasisEnd')) {
     incoming.on('StasisEnd', (event) async {
@@ -143,6 +136,8 @@ Future<void> originate(Channel incoming) async {
       } else {}
       // callQueue.incomingAcdToAgents.remove(incoming.id);
     });
+
+    client.statisChannels.remove(incoming.id);
   }
 
   if (!dialed.listeners.contains('ChannelStateChange')) {
@@ -227,6 +222,8 @@ Future<void> originate(Channel incoming) async {
           }, 30000);
         } else {}
       }
+
+      client.statisChannels.remove(dialed.id);
     });
   }
 
@@ -269,6 +266,9 @@ Future<void> originate(Channel incoming) async {
           }
 
           await mixingBridge.destroy();
+          if (externalChannel != null) {
+            await externalChannel!.hangup();
+          }
 
           if (agent.status == AgentState.ONCONVERSATION) {
             setTimeout(() {
@@ -280,6 +280,8 @@ Future<void> originate(Channel incoming) async {
           } else {
             // agent.status = AgentState.IDLE;
           }
+
+          client.statisChannels.remove(dialed.id);
         });
       }
 
@@ -287,7 +289,7 @@ Future<void> originate(Channel incoming) async {
 
       if (rtpport != null) {
         externalChannel = await client.externalMedia(
-          (err, externalChannel) {
+          (err, externChannel) {
             if (err) throw err;
           },
           app: 'hello',
@@ -297,8 +299,8 @@ Future<void> originate(Channel incoming) async {
         );
 
         // //final mixingBridge = await bridge.create(type: ['mixing']);
-        await mixingBridge
-            .addChannel(channels: [incoming.id, dialed.id, externalChannel.id]);
+        await mixingBridge.addChannel(
+            channels: [incoming.id, dialed.id, externalChannel!.id]);
       } else {
         await mixingBridge.addChannel(channels: [incoming.id, dialed.id]);
       }
