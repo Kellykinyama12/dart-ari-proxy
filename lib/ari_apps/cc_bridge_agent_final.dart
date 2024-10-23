@@ -84,6 +84,10 @@ Future<void> originate(Channel incoming) async {
 
   callQueue.incomingAcdToAgents.remove(incoming.id);
 
+  if (agent?.endpoint != '3636') {
+    callQueue.selectedAgents[agent!.endpoint] = true;
+  }
+
   if (agent != null) {
     callQueue.agentsAnswered[agent.endpoint] = agent;
   }
@@ -135,9 +139,12 @@ Future<void> originate(Channel incoming) async {
         }, 30000);
       } else {}
       // callQueue.incomingAcdToAgents.remove(incoming.id);
-    });
 
-    client.statisChannels.remove(incoming.id);
+      client.statisChannels.remove(incoming.id);
+      if (agent.endpoint != '3636') {
+        callQueue.selectedAgents.remove(agent.endpoint);
+      }
+    });
   }
 
   if (!dialed.listeners.contains('ChannelStateChange')) {
@@ -224,6 +231,9 @@ Future<void> originate(Channel incoming) async {
       }
 
       client.statisChannels.remove(dialed.id);
+      if (agent.endpoint != '3636') {
+        callQueue.selectedAgents.remove(agent.endpoint);
+      }
     });
   }
 
@@ -282,6 +292,10 @@ Future<void> originate(Channel incoming) async {
           }
 
           client.statisChannels.remove(dialed.id);
+
+          if (agent.endpoint != '3636') {
+            callQueue.selectedAgents.remove(agent.endpoint);
+          }
         });
       }
 

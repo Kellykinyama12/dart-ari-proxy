@@ -379,6 +379,7 @@ class CallQueue {
   late Ari ari_client;
 
   Map<String, AcdCall> incomingAcdToAgents = {};
+  Map<String, bool> selectedAgents = {};
 
   Map<String, Agent> freeAgentsMap = {};
 
@@ -636,8 +637,12 @@ class CallQueue {
       if (agents[agentNum] != null) {
         //print(" agent status for: $agentNum, is : $dynamicState");
         if (incomingAcdToAgents[incomingChannel] != null) {
-          incomingAcdToAgents[incomingChannel]!.freeAgents[agentNum] =
-              agents[agentNum]!;
+          if (callQueue.selectedAgents[agentNum] == null) {
+            callQueue.selectedAgents.remove(agentNum);
+
+            incomingAcdToAgents[incomingChannel]!.freeAgents[agentNum] =
+                agents[agentNum]!;
+          }
         }
 
         freeAgentsMap[agentNum] = agents[agentNum]!;
