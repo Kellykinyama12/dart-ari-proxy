@@ -402,6 +402,7 @@ class CallQueue {
       print("Records runtime type: ${calls.runtimeType}");
 
       if (jsonData != null) {
+        agents["3636"] = Agent("3636");
         print("Initialising agent data from json");
         var agentsList = jsonDecode(jsonData);
         //loop through the list
