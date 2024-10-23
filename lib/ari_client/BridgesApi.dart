@@ -41,7 +41,8 @@ class BridgesAPI {
       //print(response.statusCode);
       //print(stringData);
       return (statusCode: response.statusCode, resp: stringData);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      logger.severe('Caught an error', err, stackTrace);
       return (statusCode: null, resp: null, err: err);
     }
   }
@@ -81,7 +82,8 @@ class BridgesAPI {
       //print(response.statusCode);
       //print(stringData);
       return (statusCode: response.statusCode, resp: stringData);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      logger.severe('Caught an error', err, stackTrace);
       return (statusCode: null, resp: null, err: err);
     }
   }
@@ -117,7 +119,8 @@ class BridgesAPI {
       //print(response.statusCode);
       //print(stringData);
       return (statusCode: response.statusCode, resp: stringData);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      logger.severe('Caught an error', err, stackTrace);
       return (statusCode: null, resp: null, err: err);
     }
   }
@@ -169,7 +172,8 @@ class BridgesAPI {
       //print(response.statusCode);
       //print(stringData);
       return (statusCode: response.statusCode, resp: stringData);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      logger.severe('Caught an error', err, stackTrace);
       return (statusCode: null, resp: null, err: err);
     }
   }
@@ -204,7 +208,8 @@ class BridgesAPI {
       //print(response.statusCode);
       //print(stringData);
       return (statusCode: response.statusCode, resp: stringData);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      logger.severe('Caught an error', err, stackTrace);
       return (statusCode: null, resp: null, err: err);
     }
   }
@@ -239,7 +244,8 @@ class BridgesAPI {
       //print(response.statusCode);
       //print(stringData);
       return (statusCode: response.statusCode, resp: stringData);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      logger.severe('Caught an error', err, stackTrace);
       return (statusCode: null, resp: null, err: err);
     }
   }
@@ -272,7 +278,8 @@ class BridgesAPI {
       //print(response.statusCode);
       //print(stringData);
       return (statusCode: response.statusCode, resp: stringData);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      logger.severe('Caught an error', err, stackTrace);
       return (statusCode: null, resp: null, err: err);
     }
   }

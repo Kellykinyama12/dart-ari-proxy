@@ -3,6 +3,7 @@ import 'package:dart_ari_proxy/ari_apps/call_queue/http.dart';
 import 'package:dart_ari_proxy/ari_apps/cc_bridge_agent_final.dart';
 import 'package:dart_ari_proxy/globals.dart';
 import 'package:dotenv/dotenv.dart';
+import 'package:logging/logging.dart';
 
 void main(List<String> arguments) async {
 //Declare the variables
@@ -38,6 +39,12 @@ void main(List<String> arguments) async {
 
   voiceLoggerIp = env['VOICE_LOGGER_IP']!;
   voiceLoggerPort = int.parse(env['VOICE_LOGGER_PORT']!);
+
+   // Configure the logger
+  Logger.root.level = Level.ALL; // Set the logging level
+  Logger.root.onRecord.listen((LogRecord rec) {
+    print('${rec.level.name}: ${rec.time}: ${rec.message}');
+  });
 
   //Get a list of agents from local DB
   callQueue = await CallQueue.fromDB();

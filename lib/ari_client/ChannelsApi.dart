@@ -113,7 +113,8 @@ class ChannelsApi {
       //print(response.statusCode);
       //print(stringData);
       return (statusCode: response.statusCode, resp: stringData);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      logger.severe('Caught an error', err, stackTrace);
       return (statusCode: null, resp: null, err: err);
     }
   }
@@ -182,7 +183,8 @@ class ChannelsApi {
       //print(response.statusCode);
       //print(stringData);
       return (statusCode: response.statusCode, resp: stringData);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      logger.severe('Caught an error', err, stackTrace);
       return (statusCode: null, resp: null, err: err);
     }
   }
@@ -249,7 +251,8 @@ class ChannelsApi {
       //print(response.statusCode);
       //print(stringData);
       return (statusCode: response.statusCode, resp: stringData);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      logger.severe('Caught an error', err, stackTrace);
       return (statusCode: null, resp: null, err: err);
     }
   }
@@ -349,7 +352,8 @@ class ChannelsApi {
       //print(response.statusCode);
       //print(stringData);
       return (statusCode: response.statusCode, resp: stringData);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      logger.severe('Caught an error', err, stackTrace);
       return (statusCode: null, resp: null, err: err);
     }
   }
@@ -404,7 +408,8 @@ class ChannelsApi {
       //print(stringData);
       // return response;
       return (statusCode: response.statusCode, resp: stringData);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      logger.severe('Caught an error', err, stackTrace);
       return (statusCode: null, resp: null, err: err);
     }
   }
@@ -846,7 +851,8 @@ class ChannelsApi {
       //print(stringData);
       //return response;
       return (statusCode: response.statusCode, resp: stringData);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      logger.severe('Caught an error', err, stackTrace);
       return (statusCode: null, resp: null, err: err);
     }
   }
@@ -896,7 +902,8 @@ class ChannelsApi {
       //print(response.statusCode);
       //print(stringData);
       return (statusCode: response.statusCode, resp: stringData);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      logger.severe('Caught an error', err, stackTrace);
       return (statusCode: null, resp: null, err: err);
     }
   }
@@ -969,7 +976,8 @@ class ChannelsApi {
       //print(response.statusCode);
       //print(stringData);
       return (statusCode: response.statusCode, resp: stringData);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      logger.severe('Caught an error', err, stackTrace);
       return (statusCode: null, resp: null, err: err);
     }
   }
@@ -1091,7 +1099,8 @@ class ChannelsApi {
       //print(response.statusCode);
       //print("External media channel: $stringData");
       return (statusCode: response.statusCode, resp: stringData);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      logger.severe('Caught an error', err, stackTrace);
       return (statusCode: null, resp: null, err: err);
     }
   }
@@ -1146,7 +1155,8 @@ class ChannelsApi {
       //print(response.statusCode);
       //print(stringData);
       return (statusCode: response.statusCode, resp: stringData);
-    } catch (err) {
+    } catch (err, stackTrace) {
+      logger.severe('Caught an error', err, stackTrace);
       return (statusCode: null, resp: null, err: err);
     }
   }
