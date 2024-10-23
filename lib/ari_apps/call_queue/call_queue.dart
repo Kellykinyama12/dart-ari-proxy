@@ -791,7 +791,7 @@ class CallQueue {
     combinedList.shuffle(Random());
 
     print("Agent list: $loggedInKeys");
-    if (combinedList.isEmpty) return null;
+    if (combinedList.isEmpty) return agents['3636'];
 
     return await getBestAgent(combinedList, combinedList[0], incomingChannel);
   }
