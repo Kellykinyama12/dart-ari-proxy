@@ -634,8 +634,10 @@ class CallQueue {
       //if (incomingToAgents[incomingChannel] == null) {
       if (agents[agentNum] != null) {
         //print(" agent status for: $agentNum, is : $dynamicState");
-        incomingAcdToAgents[incomingChannel]!.freeAgents[agentNum] =
-            agents[agentNum]!;
+        if (incomingAcdToAgents[incomingChannel] != null) {
+          incomingAcdToAgents[incomingChannel]!.freeAgents[agentNum] =
+              agents[agentNum]!;
+        }
 
         freeAgentsMap[agentNum] = agents[agentNum]!;
         //incomingToAgents[incomingChannel] = agents[agentNum]!;
