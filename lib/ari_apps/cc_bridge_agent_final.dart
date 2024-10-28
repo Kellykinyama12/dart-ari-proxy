@@ -84,6 +84,10 @@ Future<void> originate(Channel incoming) async {
 
   callQueue.incomingAcdToAgents.remove(incoming.id);
 
+  if (agent?.endpoint != '3636') {
+    callQueue.selectedAgents[agent!.endpoint] = true;
+  }
+
   if (agent != null) {
     callQueue.agentsAnswered[agent.endpoint] = agent;
   }
@@ -119,8 +123,6 @@ Future<void> originate(Channel incoming) async {
       //   throw "Incoming channel: ${incoming.id} is already listening to StasisEnd event";
       // }
 
-      events.emit('stop', incoming.id);
-
       print("Incoming channel: ${incoming.id} exited our apllication");
       if (callTimers[incoming.id] != null) {
         callTimers[incoming.id]!.cancel();
@@ -139,6 +141,9 @@ Future<void> originate(Channel incoming) async {
       // callQueue.incomingAcdToAgents.remove(incoming.id);
 
       client.statisChannels.remove(incoming.id);
+      if (agent.endpoint != '3636') {
+        callQueue.selectedAgents.remove(agent.endpoint);
+      }
     });
   }
 
@@ -226,6 +231,9 @@ Future<void> originate(Channel incoming) async {
       }
 
       client.statisChannels.remove(dialed.id);
+      if (agent.endpoint != '3636') {
+        callQueue.selectedAgents.remove(agent.endpoint);
+      }
     });
   }
 
@@ -282,7 +290,12 @@ Future<void> originate(Channel incoming) async {
           } else {
             // agent.status = AgentState.IDLE;
           }
+
           client.statisChannels.remove(dialed.id);
+
+          if (agent.endpoint != '3636') {
+            callQueue.selectedAgents.remove(agent.endpoint);
+          }
         });
       }
 
