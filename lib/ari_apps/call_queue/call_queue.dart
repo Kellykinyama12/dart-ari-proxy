@@ -380,6 +380,7 @@ class CallQueue {
 
   Map<String, AcdCall> incomingAcdToAgents = {};
   Map<String, bool> selectedAgents = {};
+  Map<String, bool> probbedAgents = {};
 
   Map<String, Agent> freeAgentsMap = {};
 
@@ -637,12 +638,8 @@ class CallQueue {
       if (agents[agentNum] != null) {
         //print(" agent status for: $agentNum, is : $dynamicState");
         if (incomingAcdToAgents[incomingChannel] != null) {
-          if (callQueue.selectedAgents[agentNum] == null) {
-            callQueue.selectedAgents.remove(agentNum);
-
-            incomingAcdToAgents[incomingChannel]!.freeAgents[agentNum] =
-                agents[agentNum]!;
-          }
+          incomingAcdToAgents[incomingChannel]!.freeAgents[agentNum] =
+              agents[agentNum]!;
         }
 
         freeAgentsMap[agentNum] = agents[agentNum]!;
@@ -706,6 +703,8 @@ class CallQueue {
           callCenterPeople[agentNum]!.agentStatus = data;
           callCenterPeople[agentNum]!.status =
               processAgentStatusString(callCenterPeople[agentNum]!);
+
+          probbedAgents.remove(agentNum);
           if (callCenterPeople[agentNum]!.status != "free") {
             freeAgentsMap.remove(agentNum);
           }
@@ -822,7 +821,16 @@ class CallQueue {
         incomingAcdToAgents[incomingChannel]!.freeAgents.isEmpty) {
       if (currentAgent != null) {
         print("Checking agent status ${currAgent.endpoint}");
-        currentAgent!(currAgent.endpoint);
+
+        if (probbedAgents[currAgent.endpoint] == null) {
+          probbedAgents[currAgent.endpoint] = true;
+          currentAgent!(currAgent.endpoint);
+        } else {
+          print("agent: ${currAgent.endpoint} is already being probbed");
+          await Future.delayed(Duration(milliseconds: 200));
+
+          return getBestAgent(keys, nextKey, incomingChannel);
+        }
       } else {
         throw "CurrentAgent function cannot be null";
       }
