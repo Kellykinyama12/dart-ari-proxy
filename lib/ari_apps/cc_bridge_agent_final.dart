@@ -119,6 +119,8 @@ Future<void> originate(Channel incoming) async {
       //   throw "Incoming channel: ${incoming.id} is already listening to StasisEnd event";
       // }
 
+      events.emit('stop', incoming.id);
+
       print("Incoming channel: ${incoming.id} exited our apllication");
       if (callTimers[incoming.id] != null) {
         callTimers[incoming.id]!.cancel();

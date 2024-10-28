@@ -775,6 +775,14 @@ class CallQueue {
       });
     }
 
+    if (!events.listeners.contains('stop')) {
+      events.on('stop', (String data) async {
+        if (incomingChannel == data) {
+          return null;
+        }
+      });
+    }
+
     List<String> priorityKeys = freeAgentsMap.keys.toList();
     //List<String> keys = callQueue.agents.keys.toList();
     List<String> answereKeys = callQueue.agentsAnswered.keys.toList();
