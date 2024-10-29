@@ -821,9 +821,9 @@ class CallQueue {
         combinedList, combinedList[0], incomingChannel.id);
   }
 
-  Future<Agent> getBestAgent(
+  Future<Agent?> getBestAgent(
       List<String> keys, String currentKey, String incomingChannel) async {
-    final completer = Completer<Agent>();
+    final completer = Completer<Agent?>();
     //print("Getting best agent $currentKey");
     int currentIndex = keys.indexOf(currentKey);
 
