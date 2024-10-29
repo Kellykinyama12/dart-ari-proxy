@@ -384,6 +384,8 @@ class CallQueue {
   Map<String, AcdCall> incomingAcdToAgents = {};
   Map<String, bool> selectedAgents = {};
 
+  Map<String, bool> probedAgents = {};
+
   Map<String, Agent> freeAgentsMap = {};
 
   CallQueue({Uri? uri, dynamic jsonData, dynamic calls}) {
@@ -577,6 +579,7 @@ class CallQueue {
 
   Agent? processAgentStatus(String text, String incomingChannel) {
     int index = text.indexOf("directory number    :");
+    String? agent_num;
     if (index != -1) {
       //print("Emmiting agent status for: $text");
       String agentNum = text.substring(index);
@@ -587,6 +590,7 @@ class CallQueue {
       } else {
         callCenterPeople[agentNum] = CallCenterPerson(DirectroyNum: agentNum);
       }
+      agent_num = agentNum;
 
       // Process agent static state
       int staticIndex = text.indexOf("static state  :");
@@ -670,6 +674,8 @@ class CallQueue {
       //   }
       // }
     }
+
+    probedAgents.remove(agent_num);
   }
 
   Agent getAgentWithLongestWaitingDuration(List<Agent> agents) {
@@ -843,7 +849,17 @@ class CallQueue {
         !incomingAcdToAgents[incomingChannel]!.exited) {
       if (currentAgent != null) {
         print("Checking agent status ${currAgent.endpoint}");
-        currentAgent!(currAgent.endpoint);
+
+        if (probedAgents[currAgent.endpoint] == null) {
+          probedAgents[currAgent.endpoint] = true;
+          currentAgent!(currAgent.endpoint);
+        } else {
+          await Future.delayed(Duration(milliseconds: 200));
+
+          print("agent: ${currAgent.endpoint} is already being probbed");
+
+          return getBestAgent(keys, nextKey, incomingChannel);
+        }
       } else {
         throw "CurrentAgent function cannot be null";
       }
