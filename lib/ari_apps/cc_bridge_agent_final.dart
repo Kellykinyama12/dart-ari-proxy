@@ -80,9 +80,14 @@ Future<void> originate(Channel incoming) async {
   Uuid uid = Uuid();
   String filename = uid.v1();
 
-  Agent? agent = await callQueue.nextAgentV2(incoming.id);
+  Agent? agent = await callQueue.nextAgentV2(incoming);
 
-  callQueue.incomingAcdToAgents.remove(incoming.id);
+  if (callQueue.incomingAcdToAgents[incoming.id]!.exited) {
+    //callQueue.incomingAcdToAgents.remove(incoming.id);
+    print(
+        "Incoming channel: ${incoming.id} already existed. Discontinuing processing");
+    return;
+  }
 
   if (agent?.endpoint != '3636') {
     callQueue.selectedAgents[agent!.endpoint] = true;

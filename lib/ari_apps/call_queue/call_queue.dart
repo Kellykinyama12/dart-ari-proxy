@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:dart_ari_proxy/ari_apps/call_queue/agents.dart';
 import 'package:dart_ari_proxy/ari_client.dart';
+import 'package:dart_ari_proxy/ari_client/events/stasis_end.dart';
 import 'package:dart_ari_proxy/ari_client/misc.dart';
 import 'package:dart_ari_proxy/globals.dart';
 import 'package:dotenv/dotenv.dart';
@@ -21,6 +22,8 @@ class AcdCall {
   Agent? bestAgent;
 
   AcdCall(this.incomingChannel) {}
+
+  bool exited = false;
 }
 
 HttpClient httpRtpClient = HttpClient();
@@ -766,15 +769,31 @@ class CallQueue {
     });
   }
 
-  Future<Agent?> nextAgentV2(String incomingChannel) async {
-    incomingAcdToAgents[incomingChannel] = AcdCall(incomingChannel);
+  Future<Agent?> nextAgentV2(
+    Channel incomingChannel,
+  ) async {
+    incomingAcdToAgents[incomingChannel.id] = AcdCall(incomingChannel.id);
 
     // Ensure the event listener is added only once
     if (!events.listeners.contains('statusEvent')) {
       events.on('statusEvent', (String data) async {
-        processAgentStatus(data, incomingChannel);
+        processAgentStatus(data, incomingChannel.id);
       });
     }
+
+    incomingChannel.on('StasisEnd', (event) async {
+      var (stasisEndEvent, channel) = event as (StasisEnd, Channel);
+
+      // if (incomingStasisEndListeners[incoming.id] == null) {
+      //   incomingStasisEndListeners[incoming.id] = 1;
+      // } else {
+      //   throw "Incoming channel: ${incoming.id} is already listening to StasisEnd event";
+      // }
+
+      print("Incoming channel: ${incomingChannel.id} exited our apllication");
+      incomingAcdToAgents[incomingChannel.id]!.exited = true;
+      incomingChannel.off();
+    });
 
     List<String> priorityKeys = freeAgentsMap.keys.toList();
     //List<String> keys = callQueue.agents.keys.toList();
@@ -798,7 +817,8 @@ class CallQueue {
     print("Agent list: $loggedInKeys");
     if (combinedList.isEmpty) return agents['3636'];
 
-    return await getBestAgent(combinedList, combinedList[0], incomingChannel);
+    return await getBestAgent(
+        combinedList, combinedList[0], incomingChannel.id);
   }
 
   Future<Agent> getBestAgent(
@@ -819,7 +839,8 @@ class CallQueue {
     Agent currAgent = agents[nextKey]!;
 
     if (incomingAcdToAgents[incomingChannel] != null &&
-        incomingAcdToAgents[incomingChannel]!.freeAgents.isEmpty) {
+        incomingAcdToAgents[incomingChannel]!.freeAgents.isEmpty &&
+        !incomingAcdToAgents[incomingChannel]!.exited) {
       if (currentAgent != null) {
         print("Checking agent status ${currAgent.endpoint}");
         currentAgent!(currAgent.endpoint);
