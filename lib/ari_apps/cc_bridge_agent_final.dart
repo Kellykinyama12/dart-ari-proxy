@@ -83,7 +83,7 @@ Future<void> originate(Channel incoming) async {
   Agent? agent = await callQueue.nextAgentV2(incoming);
 
   if (callQueue.incomingAcdToAgents[incoming.id]!.exited) {
-    //callQueue.incomingAcdToAgents.remove(incoming.id);
+    callQueue.incomingAcdToAgents.remove(incoming.id);
     print(
         "Incoming channel: ${incoming.id} already existed. Discontinuing processing");
     return;
