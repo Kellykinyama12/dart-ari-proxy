@@ -859,7 +859,7 @@ class CallQueue {
           probedAgents[currAgent.endpoint] = true;
           currentAgent!(currAgent.endpoint);
 
-          setTimeout((callback) {
+          setTimeout(() {
             probedAgents.remove(currAgent.endpoint);
           }, 1000);
         } else {
