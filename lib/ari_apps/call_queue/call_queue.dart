@@ -858,6 +858,10 @@ class CallQueue {
         if (probedAgents[currAgent.endpoint] == null) {
           probedAgents[currAgent.endpoint] = true;
           currentAgent!(currAgent.endpoint);
+
+          setTimeout((callback) {
+            probedAgents.remove(currAgent.endpoint);
+          }, 1000);
         } else {
           await Future.delayed(Duration(milliseconds: 200));
 
