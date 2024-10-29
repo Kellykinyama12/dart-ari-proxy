@@ -594,7 +594,9 @@ class CallQueue {
 
       // Process agent static state
       int staticIndex = text.indexOf("static state  :");
-      if (staticIndex == -1) return null;
+      if (staticIndex == -1) {
+        return agents[agentNum];
+      }
 
       String staticText = text.substring(staticIndex);
       staticIndex = staticText.indexOf("|");
@@ -603,12 +605,14 @@ class CallQueue {
 
       if (staticState != "normal") {
         agentsLoggedIn.remove(agentNum);
-        return null;
+        return agents[agentNum];
       }
 
       // Process agent dynamic state
       int dynamicIndex = text.indexOf("dynamic state :");
-      if (dynamicIndex == -1) return null;
+      if (dynamicIndex == -1) {
+        return agents[agentNum];
+      }
 
       String dynamicText = text.substring(dynamicIndex);
       dynamicIndex = dynamicText.indexOf("|");
@@ -617,7 +621,7 @@ class CallQueue {
 
       if (dynamicState != "free") {
         freeAgentsMap.remove(agentNum);
-        return null;
+        return agents[agentNum];
       }
 
       // Process agent process group
@@ -633,7 +637,7 @@ class CallQueue {
       if (processGroup != "8800") {
         freeAgentsMap.remove(agentNum);
         agentsLoggedIn.remove(agentNum);
-        return null;
+        return agents[agentNum];
       }
       if (agents[agentNum] != null) {
         agentsLoggedIn[agentNum] = agents[agentNum]!;
@@ -675,7 +679,7 @@ class CallQueue {
       // }
     }
 
-    probedAgents.remove(agent_num);
+    return agents[agent_num];
   }
 
   Agent getAgentWithLongestWaitingDuration(List<Agent> agents) {
@@ -783,7 +787,8 @@ class CallQueue {
     // Ensure the event listener is added only once
     if (!events.listeners.contains('statusEvent')) {
       events.on('statusEvent', (String data) async {
-        processAgentStatus(data, incomingChannel.id);
+        Agent? ag = processAgentStatus(data, incomingChannel.id);
+        if (ag != null) probedAgents.remove(ag.endpoint);
       });
     }
 
