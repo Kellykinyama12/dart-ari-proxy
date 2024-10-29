@@ -814,7 +814,6 @@ class CallQueue {
     List<String> combinedList = combinedSet.toList();
     combinedList.shuffle(Random());
 
-    incomingChannel.off();
 
     print("Agent list: $loggedInKeys");
     if (combinedList.isEmpty) return agents['3636'];
