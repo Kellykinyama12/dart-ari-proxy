@@ -814,7 +814,6 @@ class CallQueue {
     List<String> combinedList = combinedSet.toList();
     combinedList.shuffle(Random());
 
-
     print("Agent list: $loggedInKeys");
     if (combinedList.isEmpty) return agents['3636'];
 
@@ -862,9 +861,15 @@ class CallQueue {
       // print("Free agents for $incomingChannel is ${keyValueList}");
 
       // .forEach((k, v) => keyValueList.add(v));
-      incomingAcdToAgents[incomingChannel]!.bestAgent =
-          getAgentWithLongestWaitingDuration(keyValueList);
-      Agent bestAgent = incomingAcdToAgents[incomingChannel]!.bestAgent!;
+      Agent? bestAgent;
+      try {
+        incomingAcdToAgents[incomingChannel]!.bestAgent =
+            getAgentWithLongestWaitingDuration(keyValueList);
+
+        bestAgent = incomingAcdToAgents[incomingChannel]!.bestAgent!;
+      } catch (e, stacktrace) {
+        print("$e, $stacktrace");
+      }
       completer.complete(bestAgent);
     }
     return completer.future;
