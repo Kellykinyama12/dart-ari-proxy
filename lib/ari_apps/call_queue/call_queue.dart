@@ -855,7 +855,8 @@ class CallQueue {
       if (currentAgent != null) {
         print("Checking agent status ${currAgent.endpoint}");
 
-        if (probedAgents[currAgent.endpoint] == null) {
+        if (probedAgents[currAgent.endpoint] == null &&
+            selectedAgents[currAgent.endpoint] == null) {
           probedAgents[currAgent.endpoint] = true;
           currentAgent!(currAgent.endpoint);
 
